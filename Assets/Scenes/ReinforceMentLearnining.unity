@@ -347,6 +347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4c0a0a53b45562429f1592dd75ebe6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  runtime: 0
   personList: []
   HumanBrainList: []
   RobotList: []
@@ -360,7 +361,6 @@ MonoBehaviour:
   RobotPrefab: {fileID: 4212430261449273798, guid: 74b45f810a581ca42b493d43b8f1528b, type: 3}
   BrainPrefab: {fileID: 0}
   FirePrefab: {fileID: 0}
-  SmokePrefab: {fileID: 7725840138560197143, guid: 1e321540757fff1499c5401bc3185044, type: 3}
   RobotParent: {fileID: 2136710684}
   FireParent: {fileID: 19583558}
   RobotBrainParent: {fileID: 0}
@@ -369,10 +369,10 @@ MonoBehaviour:
   TotalSize: 0
   RoomNum: 0
   isTraining: 0
-  useRobot: 1
+  useRobot: 0
   useFire: 1
   useHumanAgent: 0
-  usePanic: 0
+  usePanic: 1
   currentFloorhuman: 0
   FireStep: 0
   StepCount: 0
@@ -387,6 +387,7 @@ MonoBehaviour:
   EscapeHuman: 0
   EnpisodeTime: 0
   humanBrainNum: 10
+  CsvRead: {fileID: 0}
 --- !u!1001 &529632685
 PrefabInstance:
   m_ObjectHideFlags: 0

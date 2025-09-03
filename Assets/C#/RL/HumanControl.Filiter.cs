@@ -118,7 +118,7 @@ public partial class HumanControl: MonoBehaviour
 
                         if (leaderCandidates.Count > 0)
                         {
-                            Debug.Log("附近有可以跟随的领导者，我已切换为跟随者模式");
+                           // Debug.Log("附近有可以跟随的领导者，我已切换为跟随者模式");
                                 SwitchBehaviourMode();
    
                             return;
@@ -144,7 +144,7 @@ public partial class HumanControl: MonoBehaviour
         {
             List<GameObject> leaderCandidates = GetCandidate(new List<string> { "Human", "Robot" }, 360, 5).Item1;
             //FilterLeaderCandidates(ref leaderCandidates);//筛选掉不能作为自己领导者的人；
-            Debug.Log("我检测到的人类数量为："+leaderCandidates.Count);
+            //Debug.Log("我检测到的人类数量为："+leaderCandidates.Count);
             // GameObject targetLeader= DecideMyLeader(leaderCandidates);//在剩余的人中随机选择一个作为自己的领导者
 
             // 新增过滤：排除已经有领导者的人类

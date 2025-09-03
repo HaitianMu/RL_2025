@@ -8,7 +8,7 @@ using UnityEngine.AI;
 
 public partial class EnvControl : MonoBehaviour
 {
-   
+    public float runtime = 0;
     //人类列表
     public List<HumanControl> personList = new();
     //人类大脑列表
@@ -33,7 +33,7 @@ public partial class EnvControl : MonoBehaviour
     public GameObject RobotPrefab;//添加机器人用到的组件
     public GameObject BrainPrefab;//机器人大脑预制体
     public GameObject FirePrefab; //火焰预制体
-    public GameObject SmokePrefab;//烟雾预制体
+   
 
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public GameObject RobotParent;//机器人的父物体，减少性能消耗
@@ -84,8 +84,14 @@ public partial class EnvControl : MonoBehaviour
     public float EnpisodeTime;//记录每一回合的时间
 
     public int humanBrainNum=10;//添加人类大脑的数量
+
+    public CSVRead CsvRead;//读取火焰数据
     private void Start()
     {
+        CsvRead = new CSVRead();
+        CsvRead.TestFireDataLoading();//加载火焰数据
+
+
         EnpisodeNum = 0;
         HumanNum = 10;
         EnpisodeTime = 0;
@@ -149,6 +155,7 @@ public partial class EnvControl : MonoBehaviour
 
     private void FixedUpdate()
     {
+        runtime += Time.deltaTime;
         EnpisodeTime += Time.deltaTime;
         //预览模式，机器人使用贪心算法，人类使用自由移动，火焰人为控制生成地点!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (!isTraining)
@@ -160,7 +167,6 @@ public partial class EnvControl : MonoBehaviour
                 {
                     if (FireNum < FirePosition.Count)
                     {
-                        AddSmoke(FirePosition[FireNum]);
                         AddFire(FirePosition[FireNum]);
                         FireNum++;
                         FireStep++;

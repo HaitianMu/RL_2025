@@ -5,6 +5,7 @@ using CsvHelper;
 using System.IO;
 using CsvHelper.Configuration;
 using System.Globalization;
+using System;
 
 
 /*Resources路径设置：
@@ -19,21 +20,24 @@ Resources加载路径应该是："FireData/Plot3D_23.5"（不要包含.csv扩展名）
 
 Unity会自动将.csv文件作为TextAsset处理*/
 
+
 public class CSVRead : MonoBehaviour
 {
     [Header("测试设置")]
-    public string resourcePath = "FireData/Plot3D_23.5"; // Resources下的路径
+    public string resourcePath = "FireData/all_processed_data"; // Resources下的路径
     public bool logDetailedData = true;
 
-    void Start()
-    {
-        Debug.Log("=== 开始测试FireData读取 ===");
-        Debug.Log($"资源路径: {resourcePath}");
+    public List<FireData> dataList = new List<FireData>();
+    public Dictionary<Key,FireData> FireMap = new Dictionary<Key,FireData>();
+    /*   void Start()
+       {
+           Debug.Log("=== 开始测试FireData读取 ===");
+           Debug.Log($"资源路径: {resourcePath}");
 
-        TestFireDataLoading();
-    }
+           TestFireDataLoading();
+       }*/
 
-    private void TestFireDataLoading()
+    public void TestFireDataLoading()
     {
         try
         {
@@ -53,39 +57,9 @@ public class CSVRead : MonoBehaviour
             Debug.Log($"成功加载文本资源，大小: {csvFile.bytes.Length} 字节");
 
             // 读取CSV数据
-            var fireDataList = LoadFireDataFromTextAsset(csvFile);
+             LoadFireDataFromTextAsset(csvFile);
 
             Debug.Log($"=== 数据加载完成 ===");
-            Debug.Log($"成功加载 {fireDataList.Count} 条数据");
-
-            if (fireDataList.Count == 0)
-            {
-                Debug.LogWarning("加载了0条数据，请检查CSV文件格式");
-                return;
-            }
-
-            // 打印统计信息
-            PrintStatistics(fireDataList);
-
-            // 打印详细数据
-            if (logDetailedData && fireDataList.Count > 0)
-            {
-                Debug.Log("=== 前5条详细数据 ===");
-                for (int i = 0; i < Mathf.Min(5, fireDataList.Count); i++)
-                {
-                    PrintFireData(fireDataList[i], i);
-                }
-
-                Debug.Log("=== 最后5条详细数据 ===");
-                for (int i = Mathf.Max(0, fireDataList.Count - 5); i < fireDataList.Count; i++)
-                {
-                    PrintFireData(fireDataList[i], i);
-                }
-            }
-
-            // 测试数据查询功能
-            TestDataQuery(fireDataList);
-
         }
         catch (System.Exception ex)
         {
@@ -94,38 +68,59 @@ public class CSVRead : MonoBehaviour
         }
     }
 
-    private List<FireData> LoadFireDataFromTextAsset(TextAsset textAsset)
+    private void LoadFireDataFromTextAsset(TextAsset textAsset)
     {
-        var dataList = new List<FireData>();
-
+        print("开始读取数据");
         using (var reader = new StringReader(textAsset.text))
         using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             HasHeaderRecord = true,
-            Delimiter = "\t",
+            Delimiter = ",",
             MissingFieldFound = null,
             BadDataFound = null,
             HeaderValidated = null,
             PrepareHeaderForMatch = args => args.Header.Trim()
         }))
-        {
-            // 注册映射配置
-            csv.Context.RegisterClassMap<FireDataMap>();
 
-            // 跳过第一行表头
-            csv.Read();
-            csv.ReadHeader();
+        {
+            // 读取第一行表头
+            bool hasFirstLine = csv.Read();
+            print($"读取第一行结果: {hasFirstLine}");
+            if (hasFirstLine)
+            {
+                csv.ReadHeader();
+                print("第一行表头: " + string.Join("|", csv.HeaderRecord));
+            }
 
             // 跳过第二行表头（单位行）
             csv.Read();
 
-            // 读取数据行
+            print("跳过第二行表头");
+
             while (csv.Read())
             {
+                FireData fTemp = new FireData();
+                Key kTem = new Key();//将键值设置为人类的坐标和时间
                 try
                 {
-                    var record = csv.GetRecord<FireData>();
-                    dataList.Add(record);
+                    fTemp.X = float.Parse(csv.GetField(0), CultureInfo.InvariantCulture);
+                    fTemp.Y = float.Parse(csv.GetField(1), CultureInfo.InvariantCulture);
+                    fTemp.Z = float.Parse(csv.GetField(2), CultureInfo.InvariantCulture);
+                    fTemp.COConcentration = float.Parse(csv.GetField(3), CultureInfo.InvariantCulture);
+                    fTemp.Temperature = float.Parse(csv.GetField(4), CultureInfo.InvariantCulture);
+                    fTemp.Visibility = float.Parse(csv.GetField(5), CultureInfo.InvariantCulture);
+
+
+                    kTem.X = float.Parse(csv.GetField(0), CultureInfo.InvariantCulture);
+                    kTem.Y = float.Parse(csv.GetField(1), CultureInfo.InvariantCulture);
+                    kTem.Z = 0f;
+                    kTem.Time = float.Parse(csv.GetField(6), CultureInfo.InvariantCulture);
+                    if (fTemp.Z == 1.0f)//只保留Z=1处的数据
+                    {
+                        FireMap.Add(kTem, fTemp);
+
+                        //print($"key是："+kTem+$"，保存的数据是："+fTemp);
+                    }
                 }
                 catch (System.Exception ex)
                 {
@@ -134,72 +129,7 @@ public class CSVRead : MonoBehaviour
                 }
             }
         }
-
-        return dataList;
-    }
-
-    private void PrintStatistics(List<FireData> dataList)
-    {
-        if (dataList.Count == 0) return;
-
-        float minTemp = float.MaxValue;
-        float maxTemp = float.MinValue;
-        float minCO = float.MaxValue;
-        float maxCO = float.MinValue;
-        float minVis = float.MaxValue;
-        float maxVis = float.MinValue;
-
-        foreach (var data in dataList)
-        {
-            minTemp = Mathf.Min(minTemp, data.Temperature);
-            maxTemp = Mathf.Max(maxTemp, data.Temperature);
-            minCO = Mathf.Min(minCO, data.COConcentration);
-            maxCO = Mathf.Max(maxCO, data.COConcentration);
-            minVis = Mathf.Min(minVis, data.Visibility);
-            maxVis = Mathf.Max(maxVis, data.Visibility);
-        }
-
-        Debug.Log($"数据统计:");
-        Debug.Log($"温度范围: {minTemp:F2}°C - {maxTemp:F2}°C");
-        Debug.Log($"CO浓度范围: {minCO:E2} - {maxCO:E2} mol/mol");
-        Debug.Log($"能见度范围: {minVis:F2}m - {maxVis:F2}m");
-        Debug.Log($"空间范围: X[{dataList[0].X:F2} to {dataList[dataList.Count - 1].X:F2}]");
-    }
-
-    private void PrintFireData(FireData data, int index)
-    {
-        Debug.Log($"[{index:00000}] " +
-                  $"位置: ({data.X:0.00}, {data.Y:0.00}, {data.Z:0.00}) | " +
-                  $"CO: {data.COConcentration:0.000E00} | " +
-                  $"温度: {data.Temperature:00.0}°C | " +
-                  $"能见度: {data.Visibility:00.0}m");
-    }
-
-    private void TestDataQuery(List<FireData> dataList)
-    {
-        if (dataList.Count == 0) return;
-
-        Debug.Log("=== 数据查询测试 ===");
-
-        // 测试各种查询
-        var highTempData = dataList.FindAll(data => data.Temperature > 50f);
-        var dangerousCOData = dataList.FindAll(data => data.COConcentration > 0.001f);
-        var lowVisibilityData = dataList.FindAll(data => data.Visibility < 10f);
-
-        Debug.Log($"高温数据(>50°C): {highTempData.Count} 条");
-        Debug.Log($"危险CO浓度(>0.001): {dangerousCOData.Count} 条");
-        Debug.Log($"低能见度(<10m): {lowVisibilityData.Count} 条");
-
-        // 显示一些样本数据
-        if (highTempData.Count > 0)
-            PrintFireData(highTempData[0], 0);
-        if (dangerousCOData.Count > 0)
-            PrintFireData(dangerousCOData[0], 0);
-    }
-
-    [ContextMenu("运行测试")]
-    public void RunTest()
-    {
-        Start();
     }
 }
+   
+   

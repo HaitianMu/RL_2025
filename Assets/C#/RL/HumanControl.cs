@@ -72,10 +72,11 @@ public partial class HumanControl: MonoBehaviour
     }
     private void FixedUpdate()
     {
+
         if (!myEnv.useHumanAgent) {
             //每个人刚开始都是独立的领导者，但是随着程序的进行，
             //当看到机器人时，人类会进行跟随
-           // print("人类不使用大脑");
+            //print("人类不使用大脑");
             if (myEnv.usePanic && UsePanic)
             {
                 UpdatePanicLevel();    //更新人类的恐慌度等级
@@ -105,43 +106,10 @@ public partial class HumanControl: MonoBehaviour
         }
 
 
-        //在这里修改人类的生命值
+        //在这里修改人类的生命值,人类生命值的变动方式也要修改！！！9.3
         if (health > 0)
         {
             health -= DelayRate;
-            if (health > 40&&myEnv.useHumanAgent)
-            {
-                float AliveReward = 0.0002f * (health - 40);
-                myHumanBrain.AddReward(AliveReward);//人类存活奖励
-                myHumanBrain.LogReward("人类存活奖励",AliveReward);
-            }
-
-            if (myLeader != null)
-            {
-                float currentDistance = Vector3.Distance(transform.position, myEnv.Exits[0].transform.position);
-                float deltaDistance = LastDistanceToExit - currentDistance; // 注意顺序，变近是正的
-                LastDistanceToExit = currentDistance;
-
-                if (myEnv.useRobot)
-                {
-
-                    if (deltaDistance > 0.01f) // 变近了，且变化大于阈值
-                    {
-                        myEnv.RobotBrainList[0].AddReward(0.04f * deltaDistance); // 奖励（放大正向奖励系数）
-                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 0.04f * deltaDistance);
-                    }
-                    else if (deltaDistance < -0.01f) // 变远了
-                    {
-                        myEnv.RobotBrainList[0].AddReward(0.08f * deltaDistance); // 小幅惩罚（负的delta）
-                        myEnv.RobotBrainList[0].LogReward("远离出口负奖励", 0.08f * deltaDistance);
-                    }
-                }
-
-                //正向奖励系数(0.05) > 负向惩罚系数(0.02绝对值)，可能导致机器人故意反复靠近/远离出口刷分4.28,17:30
-
-                // delta变化很小（-0.01到0.01之间）就不奖励了，视为抖动或站稳，不处理
-            }
-
         }
         else if (health <= 0)
         {
@@ -151,17 +119,6 @@ public partial class HumanControl: MonoBehaviour
             }
             Debug.Log("人类死亡");
 
-            if (myEnv.useRobot) {
-                myEnv.RobotBrainList[0].AddReward(-300);
-                myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -300);
-            }
-            if (myEnv.useHumanAgent)
-            {
-                myHumanBrain.AddReward(-200);//"人类死亡给人类大脑的惩罚"
-                myHumanBrain.LogReward("人类死亡给人类大脑的惩罚",-200);
-                myHumanBrain.EndEpisode();
-            }
-            //TO ADD
             gameObject.SetActive(false);
         }
     }

@@ -13,12 +13,67 @@ public partial class HumanControl : MonoBehaviour
     public float deltaPanic;//记录恐慌值的变化值
     void UpdatePanicLevel()
     {
-        //参考文献：褚若诗. 异质行人地铁站台应急疏散行为建模与仿真[D]. 北京:北京交通大学,2022.  硕士学位论文 p22
+
+        print("更新人类恐慌等级:时间;"+myEnv.runtime);
+        //根据当前的时间和人类所处位置读取数据；这里要使用hashmap来减少计算时间
+        CSVRead cSVRead = myEnv.CsvRead;//获取内存中的火焰数据
+
+        Key key = new Key();
+        //这里要进行映射
+        key.X = Mathf.Round(this.gameObject.transform.position.x*2f)/2f;
+        key.Y= Mathf.Round(this.gameObject.transform.position.z * 2f) / 2f; 
+
+
+        // 将实时时间映射到0-29.5秒范围内（每0.5秒一个数据点）
+        float totalSimulationTime = 300f; // 5分钟 = 300秒
+        float maxDataTime = 29.5f;        // 数据最大时间到29.5秒
+
+        // 计算映射后的时间（0-29.5秒范围内）
+        float normalizedTime = (myEnv.runtime % totalSimulationTime) / totalSimulationTime * maxDataTime;
+        key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔
+
+        // 确保时间不超过29.5秒
+        key.Time = Mathf.Clamp(key.Time, 0f, 29.5f);
+
+
+        print(key.ToString());
+        if (cSVRead.FireMap.TryGetValue(key, out FireData currFireData)) {
+
+            // 找到了对应的火焰数据
+            Debug.Log($"找到火焰数据: {currFireData}");
+            // 使用 currFireData 进行后续处理
+
+        }
+        else
+        {
+            // 没有找到对应的火焰数据
+            Debug.LogWarning($"未找到位置({key.X:F2}, {key.Y:F2}, {key.Z:F2}) 时间{key.Time:F2}s的火焰数据");
+            currFireData = null; // 或者设置默认值
+        };//这个返回的是bool类型，返回的数据在currFireData中
+
+        float COConcentration = currFireData.COConcentration;
+        float Temperature = currFireData.Temperature;
+        float Visibility = currFireData.Visibility;
+
+        // 归一化参数（根据实际安全阈值调整）
+        float coWeight = 0.4f;    // CO浓度权重
+        float tempWeight = 0.3f;  // 温度权重
+        float visWeight = 0.3f;   // 能见度权重
+
+        // 计算恐慌值（0-1范围）
+        float panicLevel =
+            (Mathf.Clamp01(COConcentration / 0.01f) * coWeight) +        // CO浓度：0-0.01 mol/mol
+            (Mathf.Clamp01((Temperature - 20f) / 80f) * tempWeight) +    // 温度：20-100°C
+            (1f - Mathf.Clamp01(Visibility / 30f)) * visWeight;          // 能见度：0-30m
+
+        this.panicLevel = Mathf.Clamp01(panicLevel);
+
+        /*//参考文献：褚若诗. 异质行人地铁站台应急疏散行为建模与仿真[D]. 北京:北京交通大学,2022.  硕士学位论文 p22
         exitDistance=Vector3.Distance(this.transform.position, myEnv.Exits[0].transform.position); //目前距离出口的距离
 
         // 基础项计算
         float healthTerm = Mathf.Clamp01(1-(health /100));                    //人类自身的健康值,健康值越低，焦虑程度越高
-        /*float distanceTerm = Mathf.Clamp01(exitDistance /startDistanceToExit); //距离出口的距离*/
+        *//*float distanceTerm = Mathf.Clamp01(exitDistance /startDistanceToExit); //距离出口的距离*//*
         float sceneDiagonal = Mathf.Sqrt(
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
@@ -28,20 +83,20 @@ public partial class HumanControl : MonoBehaviour
         // 综合计算
         panicLevel =
            0.45f * healthTerm +  //健康项初期基本为0
-            0.6f * distanceTerm;
- 
+            0.6f * distanceTerm;*/
+
         //计算完恐慌度后，更新人类的期望速度,就是人类的当前速度
 
         // 根据恐慌度更新当前速度。插值函数。第一个参数 a 表示起始值，第二个参数 b 表示结束值，第三个参数 t 表示插值的权重
 
         //恐慌缓解奖励
-       /* float deltaPanic = lastPanicLevel - panicLevel;
-        if (deltaPanic > 0.1)
-        {
-            myEnv.RobotBrainList[0].AddReward(20 * deltaPanic);
-            myEnv.RobotBrainList[0].LogReward("恐慌情绪缓解奖励", 20 * deltaPanic);
-        }
-        lastPanicLevel = panicLevel;*/
+        /* float deltaPanic = lastPanicLevel - panicLevel;
+         if (deltaPanic > 0.1)
+         {
+             myEnv.RobotBrainList[0].AddReward(20 * deltaPanic);
+             myEnv.RobotBrainList[0].LogReward("恐慌情绪缓解奖励", 20 * deltaPanic);
+         }
+         lastPanicLevel = panicLevel;*/
         // 群体传染项 todo
         /* float socialTerm = 0f;
          Collider[] neighbors = Physics.OverlapSphere(transform.position, 3f);
@@ -88,20 +143,15 @@ public partial class HumanControl : MonoBehaviour
         }
     }
 
-    private void MoveModel0()//正常移动逻辑
+    private void MoveModel0()//正常移动逻辑,具有独立的思考，只会对机器人进行跟随
     {
         _myNavMeshAgent.speed = 10;
-        switch (myBehaviourMode)
-        {
-            case "Follower":
-                FollowerUpdate();
-                break;
-            case "Leader":
+        
                 LeaderUpdate();
-                break;
-        }
+              
     }
     private void MoveModel1() // 恐慌度大于0.3，小于0.7，焦虑模式：人类会加快移动速度
+        //开始出现从众行为，此外逃生速度会进行加快
     {
        // print(this.gameObject.name+"正在以模式1移动");
         _myNavMeshAgent.speed = 12;
