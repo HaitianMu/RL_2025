@@ -15,7 +15,7 @@ public partial class HumanControl: MonoBehaviour
 
 
     //领导者模式。人物自己移动
-    private void LeaderUpdate()
+    private void LeaderUpdate_HF()   //Herd Following
     {
         if (myTargetDoor is null)
         {
@@ -136,7 +136,7 @@ public partial class HumanControl: MonoBehaviour
         }
     }
     //跟随者模式
-    private void FollowerUpdate()
+    private void FollowerUpdate_HF()  //Herd Following(盲目跟随)
     {
         //print("切换模式:追随者");
 

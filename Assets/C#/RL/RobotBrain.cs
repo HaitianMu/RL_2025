@@ -99,6 +99,7 @@ public class RobotBrain : Agent
             //根据逻辑运行时，通过侦察该层的人数，来决定是否继续移动！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
             if (myEnv.isTraining is false)
                 {
+                print("非训练模式");
                     //print("当前楼层人数为:" + floor_human);
                     int lonelyHumanLeaderCounter = (from human in myEnv.personList
                                                     let humanPosition = human.transform.position - new Vector3(0, 0.5f, 0)
@@ -118,6 +119,7 @@ public class RobotBrain : Agent
   
             //训练开启，且机器人现在的位置与记忆中的位置距离小于1
             if (myEnv.isTraining) {
+                //print("训练模式，请求决策");
                 RequestDecision();
             }
         }

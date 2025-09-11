@@ -13,7 +13,7 @@ public partial class HumanControl: MonoBehaviour
     public HumanBrain myHumanBrain;
 
     public Transform targetPosition; // 目标位置
-    public int visionLimit = 1; // 射线检测距离
+    public int visionLimit = 10; // 射线检测距离
     private NavMeshAgent _myNavMeshAgent; // 导航代理组件
     public Queue<GameObject> _doorMemoryQueue;//用于记录人看到的门
     public GameObject myTargetDoor = null;  // 当前计划前往的门                              
@@ -115,7 +115,14 @@ public partial class HumanControl: MonoBehaviour
         {
             if (myLeader is not null)
             {
-                myLeader.GetComponent<RobotControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+                if (myLeader.tag == "Robot")//领导者是机器人
+                {
+                    myLeader.GetComponent<RobotControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+                }
+                else//领导者是人类
+                {
+                    myLeader.GetComponent<HumanControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+                }
             }
             Debug.Log("人类死亡");
 

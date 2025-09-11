@@ -14,7 +14,7 @@ public partial class HumanControl : MonoBehaviour
     void UpdatePanicLevel()
     {
 
-        print("更新人类恐慌等级:时间;"+myEnv.runtime);
+        //print("更新人类恐慌等级:时间;"+myEnv.runtime);
         //根据当前的时间和人类所处位置读取数据；这里要使用hashmap来减少计算时间
         CSVRead cSVRead = myEnv.CsvRead;//获取内存中的火焰数据
 
@@ -36,13 +36,33 @@ public partial class HumanControl : MonoBehaviour
         key.Time = Mathf.Clamp(key.Time, 0f, 29.5f);
 
 
-        print(key.ToString());
+        //print(key.ToString());
         if (cSVRead.FireMap.TryGetValue(key, out FireData currFireData)) {
 
             // 找到了对应的火焰数据
-            Debug.Log($"找到火焰数据: {currFireData}");
+            //Debug.Log($"找到火焰数据: {currFireData}");
             // 使用 currFireData 进行后续处理
+            
+            float COConcentration = currFireData.COConcentration;
+            float Temperature = currFireData.Temperature;
+            float Visibility = currFireData.Visibility;
 
+            this.visionLimit = (int)Visibility+1;//调整人类的视野参数
+            // 归一化参数（根据实际安全阈值调整）
+            float coWeight = 0.4f;    // CO浓度权重
+            float tempWeight = 0.3f;  // 温度权重
+            float visWeight = 0.3f;   // 能见度权重
+
+            // 计算恐慌值（0-1范围）
+            float panicLevel =
+                (Mathf.Clamp01(COConcentration / 0.01f) * coWeight) +        // CO浓度：0-0.01 mol/mol
+                (Mathf.Clamp01((Temperature - 20f) / 80f) * tempWeight) +    // 温度：20-100°C
+                (1f - Mathf.Clamp01(Visibility / 30f)) * visWeight;          // 能见度：0-30m
+
+            this.panicLevel = Mathf.Clamp01(panicLevel);
+            //this.panicLevel = 0f;  //9.4测试用  冷静状态
+            //this.panicLevel = 0.5f; //焦虑状态
+            //this.panicLevel = 0.8f; //恐慌状态
         }
         else
         {
@@ -51,22 +71,7 @@ public partial class HumanControl : MonoBehaviour
             currFireData = null; // 或者设置默认值
         };//这个返回的是bool类型，返回的数据在currFireData中
 
-        float COConcentration = currFireData.COConcentration;
-        float Temperature = currFireData.Temperature;
-        float Visibility = currFireData.Visibility;
-
-        // 归一化参数（根据实际安全阈值调整）
-        float coWeight = 0.4f;    // CO浓度权重
-        float tempWeight = 0.3f;  // 温度权重
-        float visWeight = 0.3f;   // 能见度权重
-
-        // 计算恐慌值（0-1范围）
-        float panicLevel =
-            (Mathf.Clamp01(COConcentration / 0.01f) * coWeight) +        // CO浓度：0-0.01 mol/mol
-            (Mathf.Clamp01((Temperature - 20f) / 80f) * tempWeight) +    // 温度：20-100°C
-            (1f - Mathf.Clamp01(Visibility / 30f)) * visWeight;          // 能见度：0-30m
-
-        this.panicLevel = Mathf.Clamp01(panicLevel);
+        
 
         /*//参考文献：褚若诗. 异质行人地铁站台应急疏散行为建模与仿真[D]. 北京:北京交通大学,2022.  硕士学位论文 p22
         exitDistance=Vector3.Distance(this.transform.position, myEnv.Exits[0].transform.position); //目前距离出口的距离
@@ -145,23 +150,31 @@ public partial class HumanControl : MonoBehaviour
 
     private void MoveModel0()//正常移动逻辑,具有独立的思考，只会对机器人进行跟随
     {
-        _myNavMeshAgent.speed = 10;
-        
-                LeaderUpdate();
-              
-    }
-    private void MoveModel1() // 恐慌度大于0.3，小于0.7，焦虑模式：人类会加快移动速度
-        //开始出现从众行为，此外逃生速度会进行加快
-    {
-       // print(this.gameObject.name+"正在以模式1移动");
-        _myNavMeshAgent.speed = 12;
+        _myNavMeshAgent.speed = 10f;
         switch (myBehaviourMode)
         {
             case "Follower":
-                FollowerUpdate();
+                FollowerUpdate_Clam();
                 break;
             case "Leader":
-                LeaderUpdate();
+                LeaderUpdate_Clam();
+                break;
+        }
+
+    }
+    private void MoveModel1() // 恐慌度大于0.3，小于0.7，焦虑模式：人类会加快移动速度
+
+        //开始出现从众行为，此外逃生速度会进行加快
+    {
+       // print(this.gameObject.name+"正在以模式1移动");
+        _myNavMeshAgent.speed = 2f;
+        switch (myBehaviourMode)
+        {
+            case "Follower":
+                FollowerUpdate_HF();
+                break;
+            case "Leader":
+                LeaderUpdate_HF();
                 break;
         }
     }
@@ -172,7 +185,15 @@ public partial class HumanControl : MonoBehaviour
         // 条件1：达到间隔时间 或 条件2：接近目标点
         if (myLeader != null)
         {
-            myLeader.GetComponent<RobotControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+            if (myLeader.tag == "Robot")//领导者是机器人
+            {
+                myLeader.GetComponent<RobotControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+            }
+            else//领导者是人类
+            {
+                myLeader.GetComponent<HumanControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+            }
+           
             myLeader = null;
         }
         myTargetDoor = null;
@@ -289,7 +310,7 @@ public partial class HumanControl : MonoBehaviour
 
                     if (myEnv.useRobot)
                     {
-                        leader.GetComponent<RobotControl>().myAgent.AddReward(50);
+                        //leader.GetComponent<RobotControl>().myAgent.AddReward(50);
                         myEnv.RobotBrainList[0].LogReward("人类脱离恐慌状态的奖励", 50);
                     }
                 }

@@ -368,8 +368,8 @@ MonoBehaviour:
   humanParent: {fileID: 1341671606}
   TotalSize: 0
   RoomNum: 0
-  isTraining: 0
-  useRobot: 0
+  isTraining: 1
+  useRobot: 1
   useFire: 1
   useHumanAgent: 0
   usePanic: 1

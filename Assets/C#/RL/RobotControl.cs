@@ -20,6 +20,7 @@ public class RobotControl : MonoBehaviour
         isRunning = true;//机器人默认工作
         myDirectFollowers = new List<HumanControl>();
         _botNavMeshAgent = GetComponent<NavMeshAgent>();
+        _botNavMeshAgent.speed = 12f;//将机器人速度设置为2
     }
 
     public void Update()
