@@ -94,7 +94,7 @@ public class RobotBrain : Agent
 
             AddReward(-0.01f*floor_human);//人类停留在火灾场景的惩罚
             LogReward("人类停留在火灾场景的惩罚", -0.01f*floor_human);
-
+            
            
             //根据逻辑运行时，通过侦察该层的人数，来决定是否继续移动！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
             if (myEnv.isTraining is false)
@@ -239,7 +239,9 @@ public class RobotBrain : Agent
         MoveAgent(actions);  // 移动Agent
     }
 
-    public override void Heuristic(in ActionBuffers actionsOut)
+
+
+    public override void Heuristic(in ActionBuffers actionsOut) // 这里的代码没什么用
     {
         if (myEnv.useRobot is false)
             return;
@@ -336,7 +338,7 @@ public class RobotBrain : Agent
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
        );
-        if (Vector3.Distance(targetPosition, positionExit) < sceneDiagonal / 2 &&robotInfo.myDirectFollowers.Count>0)
+        if (Vector3.Distance(targetPosition, positionExit) < sceneDiagonal / 4 &&robotInfo.myDirectFollowers.Count>0)
 
             targetPosition = positionExit+new Vector3(1,0,0);//往右边去一点，省的堵门
         //到出口一定范围内之后，将目的地设置为出口
