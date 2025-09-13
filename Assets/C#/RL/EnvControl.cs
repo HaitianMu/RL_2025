@@ -213,7 +213,7 @@ public partial class EnvControl : MonoBehaviour
 
                     RobotBrainList[0].LogReward("总人数", 10);//每成功逃脱一个人，额外给予100点奖励
                     RobotBrainList[0].AddReward(EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
-                    RobotBrainList[0].LogReward("最终奖励", EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
+                    RobotBrainList[0].LogReward("回合最终奖励", EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
                     RobotBrainList[0].EndEpisode();
                     string filename = "layout";
                     //string layoutname = name[layoutNum];

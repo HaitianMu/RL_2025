@@ -14,7 +14,7 @@ public partial class HumanControl : MonoBehaviour
     void UpdatePanicLevel()
     {
 
-        //print("更新人类恐慌等级:时间;"+myEnv.runtime);
+       
         //根据当前的时间和人类所处位置读取数据；这里要使用hashmap来减少计算时间
         CSVRead cSVRead = myEnv.CsvRead;//获取内存中的火焰数据
 
@@ -29,9 +29,9 @@ public partial class HumanControl : MonoBehaviour
         float maxDataTime = 29.5f;        // 数据最大时间到29.5秒
 
         // 计算映射后的时间（0-29.5秒范围内）
-        float normalizedTime = (myEnv.runtime % totalSimulationTime) / totalSimulationTime * maxDataTime;
-        key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔
-
+        /*float normalizedTime = (myEnv.runtime % totalSimulationTime) / totalSimulationTime * maxDataTime;
+        key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔*/
+        key.Time = Mathf.Round(myEnv.runtime * 2f) / 2f;
         // 确保时间不超过29.5秒
         key.Time = Mathf.Clamp(key.Time, 0f, 29.5f);
 
@@ -40,7 +40,7 @@ public partial class HumanControl : MonoBehaviour
         if (cSVRead.FireMap.TryGetValue(key, out FireData currFireData)) {
 
             // 找到了对应的火焰数据
-            //Debug.Log($"找到火焰数据: {currFireData}");
+            Debug.Log($"找到火焰数据: {currFireData}");
             // 使用 currFireData 进行后续处理
             
             float COConcentration = currFireData.COConcentration;
@@ -53,13 +53,18 @@ public partial class HumanControl : MonoBehaviour
             float tempWeight = 0.3f;  // 温度权重
             float visWeight = 0.3f;   // 能见度权重
 
-            // 计算恐慌值（0-1范围）
+            /// 计算恐慌值（0-1范围）
+            // 先将CO浓度从mol/mol转换为ppm：ppm = mol/mol × 1,000,000
+            float COConcentrationPPM = COConcentration * 1000000f;
+
             float panicLevel =
-                (Mathf.Clamp01(COConcentration / 0.01f) * coWeight) +        // CO浓度：0-0.01 mol/mol
-                (Mathf.Clamp01((Temperature - 20f) / 80f) * tempWeight) +    // 温度：20-100°C
-                (1f - Mathf.Clamp01(Visibility / 30f)) * visWeight;          // 能见度：0-30m
+                (Mathf.Clamp01((COConcentrationPPM - 65f) / (650f - 65f)) * coWeight) +        // CO浓度：65-650 ppm
+                (Mathf.Clamp01((Temperature - 20f) / (820f - 20f)) * tempWeight) +             // 温度：20-820°C
+                (1f - Mathf.Clamp01((Visibility - 0.5f) / (30.5f - 0.5f))) * visWeight;        // 能见度：0.5-30.5m
 
             this.panicLevel = Mathf.Clamp01(panicLevel);
+            print("更新人类恐慌等级:" + panicLevel + "时间;" + myEnv.runtime);
+
             //this.panicLevel = 0f;  //9.4测试用  冷静状态
             //this.panicLevel = 0.5f; //焦虑状态
             //this.panicLevel = 0.8f; //恐慌状态

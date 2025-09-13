@@ -48,9 +48,13 @@ public partial class HumanControl: MonoBehaviour
                                 //2是恐慌模式：完全随机移动
      //用来记录距离出口的距离
     float LastDistanceToExit;
-
+    float PanicChangeTime;
+    float stateTime;
     public void Start()
     {
+        PanicChangeTime = 3;//三秒切换一次状态
+        stateTime = 0;
+
         myLeader = null;
         myBehaviourMode = "Leader";
         _myNavMeshAgent = GetComponent<NavMeshAgent>();
@@ -72,14 +76,16 @@ public partial class HumanControl: MonoBehaviour
     }
     private void FixedUpdate()
     {
-
+        stateTime += Time.deltaTime;
         if (!myEnv.useHumanAgent) {
             //每个人刚开始都是独立的领导者，但是随着程序的进行，
             //当看到机器人时，人类会进行跟随
             //print("人类不使用大脑");
-            if (myEnv.usePanic && UsePanic)
+            if (myEnv.usePanic && UsePanic&&stateTime>PanicChangeTime)
             {
+                //print("拉拉拉，更新恐慌等级");
                 UpdatePanicLevel();    //更新人类的恐慌度等级
+                stateTime = 0;
             }
             UpdateBehaviorModel(); //更新行为模式
 
@@ -128,7 +134,7 @@ public partial class HumanControl: MonoBehaviour
                     else if (deltaDistance < -0.01f) // 变远了
                     {
                         myEnv.RobotBrainList[0].AddReward(0.08f * deltaDistance); // 小幅惩罚（负的delta）
-                        myEnv.RobotBrainList[0].LogReward("远离出口负奖励", 0.08f * deltaDistance);
+                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 0.08f * deltaDistance);
                     }
                 }
 
@@ -151,9 +157,13 @@ public partial class HumanControl: MonoBehaviour
                     myLeader.GetComponent<HumanControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
                 }
             }
+
             Debug.Log("人类死亡");
-            myEnv.RobotBrainList[0].AddReward(-300f);
-            myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -300);
+            if (myEnv.useRobot)
+            {
+                myEnv.RobotBrainList[0].AddReward(-300f);
+                myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -300);
+            }
             gameObject.SetActive(false);
         }
     }
