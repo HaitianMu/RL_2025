@@ -92,7 +92,7 @@ public class RobotBrain : Agent
             //Debug.Log("每一帧更新");
             // 每个时间步都要求决策,决策后才会收集信息以及执行操作,后续函数执行的前置条件
 
-            AddReward(-0.01f*floor_human);//人类停留在火灾场景的惩罚
+           // AddReward(-0.01f*floor_human);//人类停留在火灾场景的惩罚
             LogReward("人类停留在火灾场景的惩罚", -0.01f*floor_human);
             
            
@@ -402,7 +402,7 @@ public class RobotBrain : Agent
           //  print("跟随人类数量大于0");
             //随机一个出口，将人送到出口
             //print("2机器人检测到的出口数量为："+myEnv.Exits.Count);
-            targetPosition = targetPosition = myEnv.Exits[0].gameObject.transform.position + new Vector3(1, 0, 0);//往右边去一点，省的堵门
+            targetPosition = targetPosition = myEnv.Exits[0].gameObject.transform.position + new Vector3(1.5f, 0, 0);//往右边去一点，省的堵门
         }
         else
         {

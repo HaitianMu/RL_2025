@@ -52,7 +52,7 @@ public partial class HumanControl: MonoBehaviour
     float stateTime;
     public void Start()
     {
-        PanicChangeTime = 3;//三秒切换一次状态
+        PanicChangeTime = 2;//三秒切换一次状态
         stateTime = 0;
 
         myLeader = null;
@@ -81,11 +81,10 @@ public partial class HumanControl: MonoBehaviour
             //每个人刚开始都是独立的领导者，但是随着程序的进行，
             //当看到机器人时，人类会进行跟随
             //print("人类不使用大脑");
-            if (myEnv.usePanic && UsePanic&&stateTime>PanicChangeTime)
+            if (myEnv.usePanic && UsePanic)
             {
                 //print("拉拉拉，更新恐慌等级");
                 UpdatePanicLevel();    //更新人类的恐慌度等级
-                stateTime = 0;
             }
             UpdateBehaviorModel(); //更新行为模式
 
@@ -102,7 +101,6 @@ public partial class HumanControl: MonoBehaviour
             {
                 CurrentState = 1;
             }
-
             switch (CurrentState)
             {
                 case 0: MoveModel0(); break;
@@ -115,7 +113,7 @@ public partial class HumanControl: MonoBehaviour
         //在这里修改人类的生命值,人类生命值的变动方式也要修改！！！9.3
         if (health > 0)
         {
-            health -= DelayRate;
+           // health -= DelayRate;
 
             if (myLeader != null&&myLeader.tag=="Robot")
             {

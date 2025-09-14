@@ -23,7 +23,7 @@ public partial class HumanControl: MonoBehaviour
          
             //目前不知道去哪，而且视线里没有找到机器人，开始自己乱逛
             //print("当前没有计划前往的门，开始扫描，然后筛选");
-            (List<GameObject> doorCandidates, List<Vector3> unknownDirections) = GetCandidate(new List<string> { "Door", "Exit" }, 360, visionLimit);
+            (List<GameObject> doorCandidates, List<Vector3> unknownDirections) = GetCandidate(new List<string> { "Door", "Exit" }, 360,8);
 
             GameObject exit = FilterTargetDoorCandidates(ref doorCandidates, unknownDirections.Count > 0 ? "Explore" : "Normal");
             if (exit is not null)

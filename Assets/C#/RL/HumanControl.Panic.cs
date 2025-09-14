@@ -1,20 +1,18 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Barracuda;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UIElements;
 using static BuildingGeneratiion;
 
 public partial class HumanControl : MonoBehaviour
 {
     // HumanAgent.cs
     public bool UsePanic;
-    public float lastPanicLevel;//用于记录上一帧的恐慌值
-    public float deltaPanic;//记录恐慌值的变化值
     void UpdatePanicLevel()
     {
-
-       
         //根据当前的时间和人类所处位置读取数据；这里要使用hashmap来减少计算时间
         CSVRead cSVRead = myEnv.CsvRead;//获取内存中的火焰数据
 
@@ -40,30 +38,27 @@ public partial class HumanControl : MonoBehaviour
         if (cSVRead.FireMap.TryGetValue(key, out FireData currFireData)) {
 
             // 找到了对应的火焰数据
-            Debug.Log($"找到火焰数据: {currFireData}");
+            //Debug.Log($"找到火焰数据: {currFireData}");
             // 使用 currFireData 进行后续处理
             
             float COConcentration = currFireData.COConcentration;
             float Temperature = currFireData.Temperature;
             float Visibility = currFireData.Visibility;
-
-            this.visionLimit = (int)Visibility+1;//调整人类的视野参数
-            // 归一化参数（根据实际安全阈值调整）
-            float coWeight = 0.4f;    // CO浓度权重
-            float tempWeight = 0.3f;  // 温度权重
-            float visWeight = 0.3f;   // 能见度权重
-
-            /// 计算恐慌值（0-1范围）
+            ////调整人类的视野参数，视野最小设置为5m，最大设置为15m
+            this.visionLimit = (int)Visibility/3 + 5;
+            // 计算人类恐慌值（0-1范围）
             // 先将CO浓度从mol/mol转换为ppm：ppm = mol/mol × 1,000,000
             float COConcentrationPPM = COConcentration * 1000000f;
+           
+            if (stateTime > PanicChangeTime) {
+                float panicLevel = GetPanicvalue(COConcentrationPPM, Temperature, Visibility);
+                this.panicLevel = Mathf.Clamp01(panicLevel);
+                //print("更新人类恐慌等级:" + panicLevel + "时间;" + myEnv.runtime);
+                stateTime = 0;
+            }
 
-            float panicLevel =
-                (Mathf.Clamp01((COConcentrationPPM - 65f) / (650f - 65f)) * coWeight) +        // CO浓度：65-650 ppm
-                (Mathf.Clamp01((Temperature - 20f) / (820f - 20f)) * tempWeight) +             // 温度：20-820°C
-                (1f - Mathf.Clamp01((Visibility - 0.5f) / (30.5f - 0.5f))) * visWeight;        // 能见度：0.5-30.5m
-
-            this.panicLevel = Mathf.Clamp01(panicLevel);
-            print("更新人类恐慌等级:" + panicLevel + "时间;" + myEnv.runtime);
+            //每帧更改人类的生命衰减速率 
+            GetHealth(COConcentrationPPM,Temperature);
 
             //this.panicLevel = 0f;  //9.4测试用  冷静状态
             //this.panicLevel = 0.5f; //焦虑状态
@@ -75,8 +70,6 @@ public partial class HumanControl : MonoBehaviour
             Debug.LogWarning($"未找到位置({key.X:F2}, {key.Y:F2}, {key.Z:F2}) 时间{key.Time:F2}s的火焰数据");
             currFireData = null; // 或者设置默认值
         };//这个返回的是bool类型，返回的数据在currFireData中
-
-        
 
         /*//参考文献：褚若诗. 异质行人地铁站台应急疏散行为建模与仿真[D]. 北京:北京交通大学,2022.  硕士学位论文 p22
         exitDistance=Vector3.Distance(this.transform.position, myEnv.Exits[0].transform.position); //目前距离出口的距离
@@ -119,6 +112,45 @@ public partial class HumanControl : MonoBehaviour
              }
          }*/
     }
+    public float GetPanicvalue(float COConcentrationPPM, float Temperature, float Visibility)
+    {
+        // 归一化参数（根据实际安全阈值调整）
+        float coWeight = 0.4f;    // CO浓度权重
+        float tempWeight = 0.3f;  // 温度权重
+        float visWeight = 0.3f;   // 能见度权重
+
+        float panicLevel =
+                (Mathf.Clamp01((COConcentrationPPM - 65f) / (650f - 65f)) * coWeight) +        // CO浓度：65-650 ppm
+                (Mathf.Clamp01((Temperature - 20f) / (820f - 20f)) * tempWeight) +             // 温度：20-820°C
+                (1f - Mathf.Clamp01((Visibility - 0.5f) / (30.5f - 0.5f))) * visWeight;        // 能见度：0.5-30.5m
+        return panicLevel;
+    }
+
+    public void GetHealth(float COConcentrationPPM,float Temperature)
+    {
+        float maxHealth = 100f;
+        float coDamageMultiplier = 2f;    // CO伤害系数
+        float tempDamageMultiplier = 1f; // 温度伤害系数
+        float baseDamageRate = 0.5f;       // 基础伤害速率
+        // 环境参数范围
+         const float MIN_CO = 0f;        // ppm
+         const float MAX_CO = 650f;
+         const float MIN_TEMP = 20f;      // °C
+         const float MAX_TEMP = 820f;
+         
+
+        // 计算归一化的环境危险度（0-1范围）
+        float coDanger = Mathf.Clamp01((COConcentrationPPM - MIN_CO) / (MAX_CO - MIN_CO));
+        float tempDanger = Mathf.Clamp01((Temperature - MIN_TEMP) / (MAX_TEMP - MIN_TEMP));
+        // 计算总伤害速率（线性组合）
+        float damagePerSecond = baseDamageRate
+            + (coDanger * coDamageMultiplier)
+            + (tempDanger * tempDamageMultiplier);
+        // 应用伤害
+        health -= damagePerSecond * Time.deltaTime;
+        health = Mathf.Clamp(health, 0f, maxHealth);
+    }
+
 
     private void UpdateBehaviorModel()
     {
