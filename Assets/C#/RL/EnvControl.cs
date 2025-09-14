@@ -212,7 +212,7 @@ public partial class EnvControl : MonoBehaviour
                     EnpisodeTime = 0;
 
                     RobotBrainList[0].LogReward("总人数", 10);//每成功逃脱一个人，额外给予100点奖励
-                    RobotBrainList[0].AddReward(EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
+                    //RobotBrainList[0].AddReward(EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
                     RobotBrainList[0].LogReward("回合最终奖励", EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
                     RobotBrainList[0].EndEpisode();
                     string filename = "layout";
@@ -246,8 +246,13 @@ public partial class EnvControl : MonoBehaviour
                         //Debug.Log(currentFloorhuman);
                     }
                         AddRobot();//添加机器人
-                        AddRobotBrain();//添加机器人大脑    
-                        AddFirePosition();
+                        AddRobotBrain();//添加机器人大脑
+
+                    //人类场景停留惩罚
+                    RobotBrainList[0].AddReward(-0.1f * currentFloorhuman);
+                    RobotBrainList[0].LogReward("人类场景停留惩罚", -0.1f * currentFloorhuman);
+
+                    AddFirePosition();
                     FireNum = 0;
                     FireStep = 0;
                     StepCount = 0;
@@ -332,8 +337,8 @@ public partial class EnvControl : MonoBehaviour
             {
                 if (useRobot)//回合结束时，没有逃脱的人类全部按死亡计算
                 {
-                   /* RobotBrainList[0].AddReward(-300*currentFloorhuman);
-                    RobotBrainList[0].LogReward("人类死亡惩罚", -300* currentFloorhuman);*/
+                    RobotBrainList[0].AddReward(-300 * currentFloorhuman);
+                    RobotBrainList[0].LogReward("人类死亡惩罚", -300 * currentFloorhuman);
                 }
 
                 RobotBrainList[0].EpisodeInterrupted();//机器人终止该回合

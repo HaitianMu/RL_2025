@@ -126,13 +126,13 @@ public partial class HumanControl: MonoBehaviour
 
                     if (deltaDistance > 0.01f) // 变近了，且变化大于阈值
                     {
-                        myEnv.RobotBrainList[0].AddReward(0.04f * deltaDistance); // 奖励（放大正向奖励系数）
-                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 0.04f * deltaDistance);
+                        //myEnv.RobotBrainList[0].AddReward(0.04f * deltaDistance); // 奖励（放大正向奖励系数）
+                        //myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 0.04f * deltaDistance);
                     }
                     else if (deltaDistance < -0.01f) // 变远了
                     {
-                        myEnv.RobotBrainList[0].AddReward(0.08f * deltaDistance); // 小幅惩罚（负的delta）
-                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 0.08f * deltaDistance);
+                        //myEnv.RobotBrainList[0].AddReward(0.08f * deltaDistance); // 小幅惩罚（负的delta）
+                        //myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 0.08f * deltaDistance);
                     }
                 }
 
@@ -208,7 +208,7 @@ public partial class HumanControl: MonoBehaviour
 
                 if (myEnv.useRobot)
                 {
-                    myEnv.RobotBrainList[0].AddReward((health));//单个人类逃生奖励,但人类有可能自己导航到出口，可能会影响训练结果，所以不能太大
+                    myEnv.RobotBrainList[0].AddReward((health)+200);//单个人类逃生奖励,但人类有可能自己导航到出口，可能会影响训练结果，所以不能太大
                     myEnv.RobotBrainList[0].LogReward("单个人类逃生奖励", (health));
 
                     //!!!!!!!!!!!!!!!!!逃生率计算
@@ -218,8 +218,8 @@ public partial class HumanControl: MonoBehaviour
                 {
 
                     float Exitreward = health <= 40 ? 3f * health : 3f * (100 - health);
-                    myHumanBrain.AddReward(Exitreward);//"人类逃脱奖励"
-                    myHumanBrain.LogReward("人类逃脱奖励", Exitreward);
+                    //myHumanBrain.AddReward(Exitreward);//"人类逃脱奖励"
+                    //myHumanBrain.LogReward("人类逃脱奖励", Exitreward);
                     myHumanBrain.EndEpisode();
                 }
                
@@ -236,7 +236,7 @@ public partial class HumanControl: MonoBehaviour
                 if (myEnv.useHumanAgent)
                 {
                     float FireReward = health > 40 ? -0.5f : -0.2f;
-                    myHumanBrain.AddReward(FireReward);//"人类碰火惩罚"
+                    //myHumanBrain.AddReward(FireReward);//"人类碰火惩罚"
                     myHumanBrain.LogReward("人类碰火惩罚", FireReward);
                 }
                 break;

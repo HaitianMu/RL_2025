@@ -80,9 +80,6 @@ public class RobotBrain : Agent
                 this.transform.position +=Vector3.right;
             }
 
-            DeltDistanceToExit = Vector3.Distance(robot.transform.position, myEnv.Exits[0].transform.position) - LastDistanceToExit;
-            LastDistanceToExit = Vector3.Distance(robot.transform.position, myEnv.Exits[0].transform.position);
-
                 //print("当前楼层人数为:" + floor_human);
                 Vector3 robotPosition = robot.transform.position;
                 robotPosition.y = 0.5f;
@@ -324,7 +321,7 @@ public class RobotBrain : Agent
         currentDistance = Vector3.Distance(currentPos, targetPosition);
 
         if (currentDistance < 0.5||!IsReachable(targetPosition)) {
-            AddReward(-0.05f);//单次移动距离过小惩罚或移动目标不可达的惩罚
+            //AddReward(-0.05f);//单次移动距离过小惩罚或移动目标不可达的惩罚
             LogReward("单次移动距离过小或移动目标不可达的惩罚", -0.05f);
         }
 
