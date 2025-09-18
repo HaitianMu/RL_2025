@@ -335,7 +335,7 @@ public class RobotBrain : Agent
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
        );
-        if (Vector3.Distance(targetPosition, positionExit) < sceneDiagonal / 4 &&robotInfo.myDirectFollowers.Count>0)
+        if (Vector3.Distance(targetPosition, positionExit) < sceneDiagonal / 3 &&robotInfo.myDirectFollowers.Count>0)
 
             targetPosition = positionExit+new Vector3(1,0,0);//往右边去一点，省的堵门
         //到出口一定范围内之后，将目的地设置为出口

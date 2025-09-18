@@ -126,13 +126,13 @@ public partial class HumanControl: MonoBehaviour
 
                     if (deltaDistance > 0.01f) // 变近了，且变化大于阈值
                     {
-                        myEnv.RobotBrainList[0].AddReward(0.04f * deltaDistance); // 奖励（放大正向奖励系数）
-                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 0.04f * deltaDistance);
+                        myEnv.RobotBrainList[0].AddReward(2f * deltaDistance); // 奖励（放大正向奖励系数）
+                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 2f * deltaDistance);
                     }
                     else if (deltaDistance < -0.01f) // 变远了
                     {
-                        myEnv.RobotBrainList[0].AddReward(0.08f * deltaDistance); // 小幅惩罚（负的delta）
-                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 0.08f * deltaDistance);
+                        myEnv.RobotBrainList[0].AddReward(4f * deltaDistance); // 小幅惩罚（负的delta）
+                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 4f * deltaDistance);
                     }
                 }
 

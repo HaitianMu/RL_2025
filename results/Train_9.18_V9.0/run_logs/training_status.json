@@ -1,0 +1,159 @@
+{
+    "HumanBehavior": {
+        "checkpoints": [
+            {
+                "steps": 99984,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-99984.onnx",
+                "reward": null,
+                "creation_time": 1758210602.958243,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-99984.pt"
+                ]
+            },
+            {
+                "steps": 199968,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-199968.onnx",
+                "reward": null,
+                "creation_time": 1758211062.1964617,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-199968.pt"
+                ]
+            },
+            {
+                "steps": 299952,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-299952.onnx",
+                "reward": null,
+                "creation_time": 1758211535.2383714,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-299952.pt"
+                ]
+            },
+            {
+                "steps": 399984,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-399984.onnx",
+                "reward": null,
+                "creation_time": 1758212009.4677107,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-399984.pt"
+                ]
+            },
+            {
+                "steps": 499968,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-499968.onnx",
+                "reward": null,
+                "creation_time": 1758212479.2691946,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-499968.pt"
+                ]
+            },
+            {
+                "steps": 599952,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-599952.onnx",
+                "reward": null,
+                "creation_time": 1758212937.7006419,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-599952.pt"
+                ]
+            },
+            {
+                "steps": 699984,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-699984.onnx",
+                "reward": null,
+                "creation_time": 1758213380.2315028,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-699984.pt"
+                ]
+            },
+            {
+                "steps": 799968,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-799968.onnx",
+                "reward": null,
+                "creation_time": 1758213827.1051352,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-799968.pt"
+                ]
+            },
+            {
+                "steps": 830880,
+                "file_path": "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-830880.onnx",
+                "reward": null,
+                "creation_time": 1758213968.6357358,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-830880.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 830880,
+            "file_path": "results\\Train_9.18_V9.0\\HumanBehavior.onnx",
+            "reward": null,
+            "creation_time": 1758213968.6357358,
+            "auxillary_file_paths": [
+                "results\\Train_9.18_V9.0\\HumanBehavior\\HumanBehavior-830880.pt"
+            ]
+        }
+    },
+    "RobotBrain": {
+        "checkpoints": [
+            {
+                "steps": 99973,
+                "file_path": "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-99973.onnx",
+                "reward": 1204.2865538597107,
+                "creation_time": 1758210913.4270413,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-99973.pt"
+                ]
+            },
+            {
+                "steps": 199954,
+                "file_path": "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-199954.onnx",
+                "reward": 1197.260677576065,
+                "creation_time": 1758211696.5516868,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-199954.pt"
+                ]
+            },
+            {
+                "steps": 299940,
+                "file_path": "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-299940.onnx",
+                "reward": 954.5132074356079,
+                "creation_time": 1758212480.5194418,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-299940.pt"
+                ]
+            },
+            {
+                "steps": 399964,
+                "file_path": "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-399964.onnx",
+                "reward": 893.8300365447998,
+                "creation_time": 1758213234.055924,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-399964.pt"
+                ]
+            },
+            {
+                "steps": 498230,
+                "file_path": "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-498230.onnx",
+                "reward": 613.2078197300434,
+                "creation_time": 1758213968.7217698,
+                "auxillary_file_paths": [
+                    "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-498230.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 498230,
+            "file_path": "results\\Train_9.18_V9.0\\RobotBrain.onnx",
+            "reward": 613.2078197300434,
+            "creation_time": 1758213968.7217698,
+            "auxillary_file_paths": [
+                "results\\Train_9.18_V9.0\\RobotBrain\\RobotBrain-498230.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "1.8.2+cu111"
+    }
+}
