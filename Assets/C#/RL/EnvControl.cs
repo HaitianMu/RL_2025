@@ -200,6 +200,9 @@ public partial class EnvControl : MonoBehaviour
                 }
             }
             //先计算场景中的人数
+            //人类场景停留惩罚
+            RobotBrainList[0].AddReward(-0.1f * currentFloorhuman);
+            RobotBrainList[0].LogReward("人类场景停留惩罚", -0.1f * currentFloorhuman);
 
             if (useRobot)
             {
@@ -247,10 +250,6 @@ public partial class EnvControl : MonoBehaviour
                     }
                         AddRobot();//添加机器人
                         AddRobotBrain();//添加机器人大脑
-
-                    //人类场景停留惩罚
-                    RobotBrainList[0].AddReward(-0.1f * currentFloorhuman);
-                    RobotBrainList[0].LogReward("人类场景停留惩罚", -0.1f * currentFloorhuman);
 
                     AddFirePosition();
                     FireNum = 0;

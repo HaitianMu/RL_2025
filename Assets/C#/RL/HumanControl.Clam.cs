@@ -39,9 +39,9 @@ public partial class HumanControl : MonoBehaviour
 
                             if (myEnv.useRobot)
                             {
-                                //机器人领导奖励
-                                myLeader.GetComponent<RobotControl>().myAgent.AddReward(health);//靠近人类奖励
-                                myLeader.GetComponent<RobotControl>().myAgent.LogReward("靠近人类奖励", health);
+                                  //机器人领导奖励
+                                //myLeader.GetComponent<RobotControl>().myAgent.AddReward(health);//靠近人类奖励
+                                //myLeader.GetComponent<RobotControl>().myAgent.LogReward("靠近人类奖励", health);
                             }
                         }
                         //print(myLeader.GetComponent<Robot>().myDirectFollowers);

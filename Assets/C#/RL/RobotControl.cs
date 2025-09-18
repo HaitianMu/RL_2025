@@ -39,8 +39,8 @@ public class RobotControl : MonoBehaviour
             case "Fire":
                 print("机器人碰到火焰");
                 myAgent.stuckCounter++;
-                myAgent.AddReward(-100);//碰一次给十点惩罚
-                myAgent.LogReward("机器人触碰火焰惩罚",-100);
+                myAgent.AddReward(-5);//碰一次给5点惩罚
+                myAgent.LogReward("机器人触碰火焰惩罚",-5);
                 break;
         }
     }
