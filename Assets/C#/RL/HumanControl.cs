@@ -209,7 +209,7 @@ public partial class HumanControl: MonoBehaviour
                 if (myEnv.useRobot)
                 {
                     myEnv.RobotBrainList[0].AddReward((health)+200);//单个人类逃生奖励,但人类有可能自己导航到出口，可能会影响训练结果，所以不能太大
-                    myEnv.RobotBrainList[0].LogReward("单个人类逃生奖励", (health));
+                    myEnv.RobotBrainList[0].LogReward("单个人类逃生奖励", (health) + 200);
 
                     //!!!!!!!!!!!!!!!!!逃生率计算
                     myEnv.RobotBrainList[0].LogReward("逃生人数", 1);

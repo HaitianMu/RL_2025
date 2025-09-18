@@ -203,9 +203,9 @@ public partial class EnvControl : MonoBehaviour
 
             if (useRobot)
             {
-                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 100)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了100次
+                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50||runtime>30.0f)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
                 {
-                  
+                    runtime = 0;//将场景运行时间归零
                     this.LogReward("总人数", 10);
                     this.LogReward("回合数", 1);
                     this.LogReward("运行花费的总时间", EnpisodeTime);
@@ -213,7 +213,7 @@ public partial class EnvControl : MonoBehaviour
 
                     RobotBrainList[0].LogReward("总人数", 10);//每成功逃脱一个人，额外给予100点奖励
                     //RobotBrainList[0].AddReward(EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
-                    RobotBrainList[0].LogReward("回合最终奖励", EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
+                   // RobotBrainList[0].LogReward("回合最终奖励", EscapeHuman * 50);//每成功逃脱一个人，额外给予100点奖励
                     RobotBrainList[0].EndEpisode();
                     string filename = "layout";
                     //string layoutname = name[layoutNum];

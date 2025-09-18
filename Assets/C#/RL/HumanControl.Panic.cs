@@ -31,7 +31,7 @@ public partial class HumanControl : MonoBehaviour
         key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔*/
         key.Time = Mathf.Round(myEnv.runtime * 2f) / 2f;
         // 确保时间不超过29.5秒
-        key.Time = Mathf.Clamp(key.Time, 0f, 29.5f);
+       // key.Time = Mathf.Clamp(key.Time, 0f, 29.5f);
 
 
         //print(key.ToString());
@@ -147,8 +147,8 @@ public partial class HumanControl : MonoBehaviour
             + (coDanger * coDamageMultiplier)
             + (tempDanger * tempDamageMultiplier);
         // 应用伤害
-        health -= damagePerSecond * Time.deltaTime;
-        health = Mathf.Clamp(health, 0f, maxHealth);
+        health -= damagePerSecond*Time.deltaTime;
+        
     }
 
 
@@ -348,7 +348,7 @@ public partial class HumanControl : MonoBehaviour
                     if (myEnv.useRobot)
                     {
                         //leader.GetComponent<RobotControl>().myAgent.AddReward(50);
-                        myEnv.RobotBrainList[0].LogReward("人类脱离恐慌状态的奖励", 50);
+                        //myEnv.RobotBrainList[0].LogReward("人类脱离恐慌状态的奖励", 50);
                     }
                 }
             }

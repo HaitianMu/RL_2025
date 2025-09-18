@@ -90,7 +90,7 @@ public class RobotBrain : Agent
             // 每个时间步都要求决策,决策后才会收集信息以及执行操作,后续函数执行的前置条件
 
            // AddReward(-0.01f*floor_human);//人类停留在火灾场景的惩罚
-            LogReward("人类停留在火灾场景的惩罚", -0.01f*floor_human);
+            //LogReward("人类停留在火灾场景的惩罚", -0.01f*floor_human);
             
            
             //根据逻辑运行时，通过侦察该层的人数，来决定是否继续移动！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
@@ -322,7 +322,7 @@ public class RobotBrain : Agent
 
         if (currentDistance < 0.5||!IsReachable(targetPosition)) {
             //AddReward(-0.05f);//单次移动距离过小惩罚或移动目标不可达的惩罚
-            LogReward("单次移动距离过小或移动目标不可达的惩罚", -0.05f);
+            //LogReward("单次移动距离过小或移动目标不可达的惩罚", -0.05f);
         }
 
         if (!IsReachable(targetPosition))//无效目的地，返回
