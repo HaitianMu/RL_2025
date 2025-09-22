@@ -200,12 +200,12 @@ public partial class EnvControl : MonoBehaviour
                 }
             }
             //先计算场景中的人数
-            //人类场景停留惩罚
-            RobotBrainList[0].AddReward(-0.1f * currentFloorhuman);
-            RobotBrainList[0].LogReward("人类场景停留惩罚", -0.1f * currentFloorhuman);
 
             if (useRobot)
             {
+                //人类场景停留惩罚
+                RobotBrainList[0].AddReward(-0.1f * currentFloorhuman);
+                RobotBrainList[0].LogReward("人类场景停留惩罚", -0.1f * currentFloorhuman);
                 if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50||runtime>30.0f)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
                 {
                     runtime = 0;//将场景运行时间归零
@@ -250,6 +250,8 @@ public partial class EnvControl : MonoBehaviour
                     }
                         AddRobot();//添加机器人
                         AddRobotBrain();//添加机器人大脑
+
+                   
 
                     AddFirePosition();
                     FireNum = 0;
