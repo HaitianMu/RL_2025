@@ -29,6 +29,8 @@ public partial class HumanControl: MonoBehaviour
 
     private const float FOLLOWER_DISTANCE_THRESHOLD = 0.5f; //切换状态的最小距离
 
+    private bool isFounded;
+
     //奖励相关参数
     public float health;//人类血量
     private float DelayRate = 0.01f;//人类血量衰减速率
@@ -52,6 +54,7 @@ public partial class HumanControl: MonoBehaviour
     float stateTime;
     public void Start()
     {
+        isFounded = false;//初始是没有被机器人发现过的
         PanicChangeTime = 2;//三秒切换一次状态
         stateTime = 0;
 
@@ -126,13 +129,13 @@ public partial class HumanControl: MonoBehaviour
 
                     if (deltaDistance > 0.01f) // 变近了，且变化大于阈值
                     {
-                        myEnv.RobotBrainList[0].AddReward(2f * deltaDistance); // 奖励（放大正向奖励系数）
-                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 2f * deltaDistance);
+                        myEnv.RobotBrainList[0].AddReward(8f * deltaDistance); // 奖励（放大正向奖励系数）
+                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 8f * deltaDistance);
                     }
                     else if (deltaDistance < -0.01f) // 变远了
                     {
-                        myEnv.RobotBrainList[0].AddReward(4f * deltaDistance); // 小幅惩罚（负的delta）
-                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 4f * deltaDistance);
+                        myEnv.RobotBrainList[0].AddReward(6f * deltaDistance); // 小幅惩罚（负的delta）
+                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 6f * deltaDistance);
                     }
                 }
 
@@ -159,8 +162,8 @@ public partial class HumanControl: MonoBehaviour
             Debug.Log("人类死亡");
             if (myEnv.useRobot)
             {
-                myEnv.RobotBrainList[0].AddReward(-300f);
-                myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -300);
+                myEnv.RobotBrainList[0].AddReward(-100f);
+                myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -100);
             }
             gameObject.SetActive(false);
         }

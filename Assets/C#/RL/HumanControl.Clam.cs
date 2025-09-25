@@ -25,7 +25,7 @@ public partial class HumanControl : MonoBehaviour
                 List<GameObject> leaderCandidates = GetCandidate_Clam(new List<string> { "Robot" }, 360, 20).Item1;
                 if (leaderCandidates.Count > 0)
                 {
-                    print("发现了符合追随条件的人类或者机器人，进入追随者模式");
+                    print("发现了符合追随条件的机器人，进入追随者模式");
 
                     myLeader = leaderCandidates[0];
 
@@ -37,11 +37,12 @@ public partial class HumanControl : MonoBehaviour
                             //print(this.name + "将自己加入机器人的跟随者列表");
                             myLeader.GetComponent<RobotControl>().myDirectFollowers.Add(gameObject.GetComponent<HumanControl>());//将自己加入机器人的跟随者列表
 
-                            if (myEnv.useRobot)
+                            if (myEnv.useRobot&&isFounded==false)//没有被机器人发现过
                             {
                                   //机器人领导奖励
-                                //myLeader.GetComponent<RobotControl>().myAgent.AddReward(health);//靠近人类奖励
-                                //myLeader.GetComponent<RobotControl>().myAgent.LogReward("靠近人类奖励", health);
+                                myLeader.GetComponent<RobotControl>().myAgent.AddReward(health*10);//靠近人类奖励
+                                myLeader.GetComponent<RobotControl>().myAgent.LogReward("靠近人类奖励", health*10);
+                                isFounded = true;
                             }
                         }
                         //print(myLeader.GetComponent<Robot>().myDirectFollowers);

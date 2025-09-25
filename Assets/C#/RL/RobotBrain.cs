@@ -33,7 +33,7 @@ public class RobotBrain : Agent
     [HideInInspector] public RobotControl robotInfo;
  
     // 当前所在楼层
-    public int currentFloor;
+    public int currentFloor=1;
 
     // 机器人卡死计数器,会被火焰卡死
     public int stuckCounter;
@@ -311,6 +311,10 @@ public class RobotBrain : Agent
        // Debug.Log($"Actions: [{continuousActions[0]}, {continuousActions[1]}]");
         float targetX = Mathf.Clamp(continuousActions[0], -1, 1) * (myEnv.complexityControl.buildingGeneration.totalWidth / 2f) + (myEnv.complexityControl.buildingGeneration.totalWidth / 2f);
         float targetZ = Mathf.Clamp(continuousActions[1], -1, 1) * (myEnv.complexityControl.buildingGeneration.totalHeight / 2f) + (myEnv.complexityControl.buildingGeneration.totalHeight / 2f);
+        /*// 输出上下界到控制面板
+        Debug.Log($"targetX 上下界: [0, {myEnv.complexityControl.buildingGeneration.totalWidth}]");
+        Debug.Log($"targetZ 上下界: [0, {myEnv.complexityControl.buildingGeneration.totalHeight}]");*/
+
         Vector3 targetPosition = new(targetX, 0.5f, targetZ);
         //print("目的地是："+targetPosition);
 
@@ -335,10 +339,11 @@ public class RobotBrain : Agent
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
        );
-        if (Vector3.Distance(targetPosition, positionExit) < sceneDiagonal / 3 &&robotInfo.myDirectFollowers.Count>0)
 
-            targetPosition = positionExit+new Vector3(1,0,0);//往右边去一点，省的堵门
+       
         //到出口一定范围内之后，将目的地设置为出口
+
+
         //Debug.Log("这一帧的目的地是："+targetPosition);
         if (myEnv.isTraining is false)
         {

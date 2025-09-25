@@ -23,13 +23,13 @@ public partial class HumanControl : MonoBehaviour
 
 
         // 将实时时间映射到0-29.5秒范围内（每0.5秒一个数据点）
-        float totalSimulationTime = 300f; // 5分钟 = 300秒
-        float maxDataTime = 29.5f;        // 数据最大时间到29.5秒
+        float totalSimulationTime = 60f; // 5分钟 = 300秒
+        float maxDataTime =30f;        // 数据最大时间到29.5秒
 
         // 计算映射后的时间（0-29.5秒范围内）
-        /*float normalizedTime = (myEnv.runtime % totalSimulationTime) / totalSimulationTime * maxDataTime;
-        key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔*/
-        key.Time = Mathf.Round(myEnv.runtime * 2f) / 2f;
+        float normalizedTime = (myEnv.runtime % totalSimulationTime) / totalSimulationTime * maxDataTime;
+        key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔
+       // key.Time = Mathf.Round(myEnv.runtime * 2f) / 2f;
         // 确保时间不超过29.5秒
        // key.Time = Mathf.Clamp(key.Time, 0f, 29.5f);
 
@@ -187,7 +187,7 @@ public partial class HumanControl : MonoBehaviour
 
     private void MoveModel0()//正常移动逻辑,具有独立的思考，只会对机器人进行跟随
     {
-        _myNavMeshAgent.speed = 10f;
+        _myNavMeshAgent.speed =4f;
         switch (myBehaviourMode)
         {
             case "Follower":
@@ -204,7 +204,7 @@ public partial class HumanControl : MonoBehaviour
         //开始出现从众行为，此外逃生速度会进行加快
     {
        // print(this.gameObject.name+"正在以模式1移动");
-        _myNavMeshAgent.speed = 2f;
+        _myNavMeshAgent.speed = 6f;
         switch (myBehaviourMode)
         {
             case "Follower":
@@ -237,7 +237,7 @@ public partial class HumanControl : MonoBehaviour
       
         myBehaviourMode = "Leader";
         
-        _myNavMeshAgent.speed = 10;
+        _myNavMeshAgent.speed = 6;
         if (Time.time - lastPanicUpdateTime > panicMoveInterval ||
             Vector3.Distance(transform.position, myDestination) < 0.5f)
         {
