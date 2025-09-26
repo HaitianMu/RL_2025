@@ -1,45 +1,45 @@
 {
-    "RobotBrain": {
-        "checkpoints": [
-            {
-                "steps": 384,
-                "file_path": "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-384.onnx",
-                "reward": null,
-                "creation_time": 1758848319.1818135,
-                "auxillary_file_paths": [
-                    "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-384.pt"
-                ]
-            }
-        ],
-        "final_checkpoint": {
-            "steps": 384,
-            "file_path": "results\\Train_9.26_V12.0\\RobotBrain.onnx",
-            "reward": null,
-            "creation_time": 1758848319.1818135,
-            "auxillary_file_paths": [
-                "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-384.pt"
-            ]
-        }
-    },
     "HumanBehavior": {
         "checkpoints": [
             {
-                "steps": 3840,
-                "file_path": "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-3840.onnx",
+                "steps": 6240,
+                "file_path": "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-6240.onnx",
                 "reward": null,
-                "creation_time": 1758848319.265661,
+                "creation_time": 1758876552.4854188,
                 "auxillary_file_paths": [
-                    "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-3840.pt"
+                    "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-6240.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 3840,
+            "steps": 6240,
             "file_path": "results\\Train_9.26_V12.0\\HumanBehavior.onnx",
             "reward": null,
-            "creation_time": 1758848319.265661,
+            "creation_time": 1758876552.4854188,
             "auxillary_file_paths": [
-                "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-3840.pt"
+                "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-6240.pt"
+            ]
+        }
+    },
+    "RobotBrain": {
+        "checkpoints": [
+            {
+                "steps": 640,
+                "file_path": "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-640.onnx",
+                "reward": null,
+                "creation_time": 1758876552.6094248,
+                "auxillary_file_paths": [
+                    "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-640.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 640,
+            "file_path": "results\\Train_9.26_V12.0\\RobotBrain.onnx",
+            "reward": null,
+            "creation_time": 1758876552.6094248,
+            "auxillary_file_paths": [
+                "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-640.pt"
             ]
         }
     },

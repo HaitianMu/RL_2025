@@ -52,6 +52,8 @@ public class RobotBrain : Agent
 
     public Vector3 robotPosition;
 
+   public  Vector3 targetPosition;//机器人的决策目的地，但不一定朝向它移动，要经过一系列判断，比如是否可达？
+
     //观测值填充占位使用
     // 在EnvController中定义常量
     public const int MAX_HUMANS = 10; //最大人类数量， 与课程学习上限一致
@@ -126,7 +128,8 @@ public class RobotBrain : Agent
                 LogReward("人类停留场景惩罚", -myEnv.currentFloorhuman * HumanHealthDecayRate);
                 _humanHealthObservation -= HumanHealthDecayRate;
 
-                if (Vector3.Distance(robotPosition, robotDestinationCache) < 1) { //已经到达目的地之后，再次前往下一个目的地
+                if (Vector3.Distance(robotPosition, robotDestinationCache) < 2) { //距离目的2m（考虑到y轴高度），认为已经到达目的地。已经到达目的地之后，再次前往下一个目的地
+                   // print("发送请求");
                     RequestDecision();
                 }
             }
@@ -273,12 +276,14 @@ public class RobotBrain : Agent
         Debug.Log($"targetX 上下界: [0, {myEnv.complexityControl.buildingGeneration.totalWidth}]");
         Debug.Log($"targetZ 上下界: [0, {myEnv.complexityControl.buildingGeneration.totalHeight}]");*/
 
-        Vector3 targetPosition = new(targetX, 0.5f, targetZ);
+        targetPosition = new(targetX, 0.5f, targetZ);
         //print("目的地是："+targetPosition);
 
 
         if (!IsReachable(targetPosition))//无效目的地，返回
         {
+            //print("决策目的地不可达");//到这里是个死胡同了！！！！！！！！！9.26，15:00
+
             GMoveAgent();
             stuckCounter++;//目的地无效
             return;
@@ -288,7 +293,7 @@ public class RobotBrain : Agent
         {
             targetPosition = myEnv.Exits[0].gameObject.transform.position;
         }
-        //定位到了出口附近一定范围内，将目的地设置为出口
+        //定位到了出口附近一定范围内，且跟随者数量大于0，将目的地设置为出口
 
 
         //Debug.Log("这一帧的目的地是："+targetPosition);
@@ -321,7 +326,7 @@ public class RobotBrain : Agent
             }
             else
             {
-                print("在这里设置目的地了，并朝向目标进行移动");
+                //print("决策目的地可达，并朝向决策目的地进行移动");
                 robotDestinationCache = targetPosition;
                 robotNavMeshAgent.SetDestination(robotDestinationCache);
             }
@@ -344,9 +349,6 @@ public class RobotBrain : Agent
 
     private void GMoveAgent()
     {
-        //print("移动机器人函数");
-        Vector3 targetPosition = new();
-        Vector3 robotPosition = robot.transform.position;
         //print("机器人的跟随者数量为：" + robotInfo.myDirectFollowers.Count);
         if (robotInfo.robotFollowerCounter > 0)//如果当前机器人当前跟随者大于0个，前往出口
         {
