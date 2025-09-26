@@ -26,6 +26,7 @@ public class RobotControl : MonoBehaviour
     public void Update()
     {
         robotFollowerCounter = myDirectFollowers.Count;
+        myAgent.robotPosition=this.transform.position;
 
     }
 

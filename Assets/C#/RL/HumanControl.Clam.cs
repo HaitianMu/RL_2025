@@ -40,8 +40,8 @@ public partial class HumanControl : MonoBehaviour
                             if (myEnv.useRobot&&isFounded==false)//没有被机器人发现过
                             {
                                   //机器人领导奖励
-                                myLeader.GetComponent<RobotControl>().myAgent.AddReward(health*10);//靠近人类奖励
-                                myLeader.GetComponent<RobotControl>().myAgent.LogReward("靠近人类奖励", health*10);
+                                //myLeader.GetComponent<RobotControl>().myAgent.AddReward(health*10);//靠近人类奖励
+                               //myLeader.GetComponent<RobotControl>().myAgent.LogReward("靠近人类奖励", health*10);
                                 isFounded = true;
                             }
                         }

@@ -1,0 +1,51 @@
+{
+    "RobotBrain": {
+        "checkpoints": [
+            {
+                "steps": 384,
+                "file_path": "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-384.onnx",
+                "reward": null,
+                "creation_time": 1758848319.1818135,
+                "auxillary_file_paths": [
+                    "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-384.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 384,
+            "file_path": "results\\Train_9.26_V12.0\\RobotBrain.onnx",
+            "reward": null,
+            "creation_time": 1758848319.1818135,
+            "auxillary_file_paths": [
+                "results\\Train_9.26_V12.0\\RobotBrain\\RobotBrain-384.pt"
+            ]
+        }
+    },
+    "HumanBehavior": {
+        "checkpoints": [
+            {
+                "steps": 3840,
+                "file_path": "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-3840.onnx",
+                "reward": null,
+                "creation_time": 1758848319.265661,
+                "auxillary_file_paths": [
+                    "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-3840.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 3840,
+            "file_path": "results\\Train_9.26_V12.0\\HumanBehavior.onnx",
+            "reward": null,
+            "creation_time": 1758848319.265661,
+            "auxillary_file_paths": [
+                "results\\Train_9.26_V12.0\\HumanBehavior\\HumanBehavior-3840.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "1.8.2+cu111"
+    }
+}

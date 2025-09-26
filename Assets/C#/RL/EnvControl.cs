@@ -204,11 +204,11 @@ public partial class EnvControl : MonoBehaviour
             if (useRobot)
             {
                 //人类场景停留惩罚
-                RobotBrainList[0].AddReward(-0.02f * currentFloorhuman);
-                RobotBrainList[0].LogReward("人类场景停留惩罚", -0.02f * currentFloorhuman);
+                //RobotBrainList[0].AddReward(-0.02f * currentFloorhuman);
+                //RobotBrainList[0].LogReward("人类场景停留惩罚", -0.02f * currentFloorhuman);
 
 
-                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50||runtime>60.0f)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
+                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50||runtime>240.0f)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
                 {
                     
                     this.LogReward("总人数", 10);
@@ -346,8 +346,8 @@ public partial class EnvControl : MonoBehaviour
             {
                 if (useRobot)//回合结束时，没有逃脱的人类全部按死亡计算
                 {
-                    RobotBrainList[0].AddReward(-100 * currentFloorhuman);
-                    RobotBrainList[0].LogReward("人类死亡惩罚", -100 * currentFloorhuman);
+                    //RobotBrainList[0].AddReward(-100 * currentFloorhuman);
+                    //RobotBrainList[0].LogReward("人类死亡惩罚", -100 * currentFloorhuman);
                 }
 
                 RobotBrainList[0].EpisodeInterrupted();//机器人终止该回合

@@ -5,14 +5,14 @@ behaviors:
     hyperparameters:
       batch_size: 1024
       buffer_size: 10240
-      learning_rate: 0.0002
+      learning_rate: 0.0003
       beta: 0.005
       epsilon: 0.2
       lambd: 0.95
       num_epoch: 3
       shared_critic: false
       learning_rate_schedule: linear
-      beta_schedule: linear
+      beta_schedule: constant
       epsilon_schedule: linear
     network_settings:
       normalize: false
@@ -37,7 +37,7 @@ behaviors:
     init_path: null
     keep_checkpoints: 80
     checkpoint_interval: 100000
-    max_steps: 500000
+    max_steps: 8000000
     time_horizon: 64
     summary_freq: 10000
     threaded: false
@@ -109,8 +109,8 @@ checkpoint_settings:
   run_id: Train_9.25_V11.0
   initialize_from: null
   load_model: false
-  resume: true
-  force: false
+  resume: false
+  force: true
   train_model: false
   inference: false
   results_dir: results

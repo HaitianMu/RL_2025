@@ -129,13 +129,13 @@ public partial class HumanControl: MonoBehaviour
 
                     if (deltaDistance > 0.01f) // 变近了，且变化大于阈值
                     {
-                        myEnv.RobotBrainList[0].AddReward(8f * deltaDistance); // 奖励（放大正向奖励系数）
-                        myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 8f * deltaDistance);
+                        //myEnv.RobotBrainList[0].AddReward(8f * deltaDistance); // 奖励（放大正向奖励系数）
+                       //myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 8f * deltaDistance);
                     }
                     else if (deltaDistance < -0.01f) // 变远了
                     {
-                        myEnv.RobotBrainList[0].AddReward(6f * deltaDistance); // 小幅惩罚（负的delta）
-                        myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 6f * deltaDistance);
+                        //myEnv.RobotBrainList[0].AddReward(6f * deltaDistance); // 小幅惩罚（负的delta）
+                       // myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 6f * deltaDistance);
                     }
                 }
 
@@ -162,8 +162,8 @@ public partial class HumanControl: MonoBehaviour
             Debug.Log("人类死亡");
             if (myEnv.useRobot)
             {
-                myEnv.RobotBrainList[0].AddReward(-100f);
-                myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -100);
+                myEnv.RobotBrainList[0].AddReward(-300f);
+               myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -300);
             }
             gameObject.SetActive(false);
         }
@@ -204,6 +204,20 @@ public partial class HumanControl: MonoBehaviour
                 break;
 
             case "Exit":
+
+                if (myLeader != null)
+                {
+                    if (myLeader.tag == "Robot")//领导者是机器人
+                    {
+                        myLeader.GetComponent<RobotControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+                    }
+                    else//领导者是人类
+                    {
+                        myLeader.GetComponent<HumanControl>().myDirectFollowers.Remove(gameObject.GetComponent<HumanControl>());
+                    }
+
+                    myLeader = null;
+                }
                 // print("我成功逃离了");
                 /*  myEnv.personList.Remove(this);*/
                 this.gameObject.SetActive(false);
@@ -211,8 +225,8 @@ public partial class HumanControl: MonoBehaviour
 
                 if (myEnv.useRobot)
                 {
-                    myEnv.RobotBrainList[0].AddReward((health)+200);//单个人类逃生奖励,但人类有可能自己导航到出口，可能会影响训练结果，所以不能太大
-                    myEnv.RobotBrainList[0].LogReward("单个人类逃生奖励", (health) + 200);
+                    myEnv.RobotBrainList[0].AddReward((health) * 10);//单个人类逃生奖励,但人类有可能自己导航到出口，可能会影响训练结果，所以不能太大
+                    myEnv.RobotBrainList[0].LogReward("单个人类逃生奖励", (health)*10);
 
                     //!!!!!!!!!!!!!!!!!逃生率计算
                     myEnv.RobotBrainList[0].LogReward("逃生人数", 1);

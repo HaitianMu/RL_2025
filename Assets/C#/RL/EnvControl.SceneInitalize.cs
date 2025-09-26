@@ -113,6 +113,8 @@ public partial class EnvControl : MonoBehaviour
         robotBrain.stuckCounter = 0;
         robotBrain.SignalcostTime = 0;
         robotBrain.TotalcostTime = 0;
+        robotBrain._humanHealthObservation = 100;
+        robotBrain.robotPosition = robot.gameObject.transform.position;
         RobotBrainList[0].RobotIsInitialized = true;//初始化已完成，可以执行后续函数
     }
     public void AddPerson(int num)
