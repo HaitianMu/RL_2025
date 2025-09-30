@@ -84,7 +84,7 @@ public partial class HumanControl: MonoBehaviour
             //每个人刚开始都是独立的领导者，但是随着程序的进行，
             //当看到机器人时，人类会进行跟随
             //print("人类不使用大脑");
-            if (myEnv.usePanic && UsePanic)
+            if (myEnv.usePanic)//找到机器人后就把这个禁用了
             {
                 //print("拉拉拉，更新恐慌等级");
                 UpdatePanicLevel();    //更新人类的恐慌度等级

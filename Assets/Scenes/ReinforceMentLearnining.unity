@@ -610,10 +610,14 @@ PrefabInstance:
     - target: {fileID: 10268829736374538, guid: 8e87fe450e5992948b646735a56d466f, type: 3}
       propertyPath: m_Model
       value: 
-      objectReference: {fileID: 5022602860645237092, guid: c7b7a5fc570da1a4babf3d39ab9d125f, type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 10268829736374538, guid: 8e87fe450e5992948b646735a56d466f, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
-      value: 52
+      value: 72
+      objectReference: {fileID: 0}
+    - target: {fileID: 10268829736374538, guid: 8e87fe450e5992948b646735a56d466f, type: 3}
+      propertyPath: m_BrainParameters.NumStackedVectorObservations
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 10268829736374539, guid: 8e87fe450e5992948b646735a56d466f, type: 3}
       propertyPath: m_RootOrder

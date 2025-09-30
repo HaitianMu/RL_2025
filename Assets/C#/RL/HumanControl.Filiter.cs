@@ -198,7 +198,7 @@ public partial class HumanControl: MonoBehaviour
         else//已经有领导者了，则跟随领导者，直到出口。
         {
             Vector3 leaderPosition = myLeader.transform.position;
-            List<GameObject> exitList = GetCandidate(new List<string> { "Exit" }, 360, visionLimit).Item1;
+            List<GameObject> exitList = GetCandidate(new List<string> { "Exit" }, 360, 30).Item1;
 
             //在跟随的过程中，持续进行检测是否有出口，有的话就直接离开,没有的话就继续跟随机器人
             if (exitList.Count > 0)

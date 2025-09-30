@@ -11,6 +11,8 @@ public partial class HumanControl : MonoBehaviour
 {
     // HumanAgent.cs
     public bool UsePanic;
+    // 计算总伤害速率（线性组合）
+    public float damagePerSecond = 0;
     void UpdatePanicLevel()
     {
         //根据当前的时间和人类所处位置读取数据；这里要使用hashmap来减少计算时间
@@ -22,12 +24,10 @@ public partial class HumanControl : MonoBehaviour
         key.Y= Mathf.Round(this.gameObject.transform.position.z * 2f) / 2f; 
 
 
-        // 将实时时间映射到0-29.5秒范围内（每0.5秒一个数据点）
-        float totalSimulationTime = 240f; // 5分钟 = 300秒
-        float maxDataTime =240f;        // 数据最大时间到29.5秒
+        // 将实时时间映射到0-240秒范围内（每0.5秒一个数据点）
+        //火焰的仿真数据保存了30s，所以将当前时间/8来模仿在火灾场景中的停留时间
 
-        // 计算映射后的时间（0-29.5秒范围内）
-        float normalizedTime = (myEnv.runtime % totalSimulationTime) / totalSimulationTime * maxDataTime;
+        float normalizedTime = (myEnv.runtime / 3);
         key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔
        // key.Time = Mathf.Round(myEnv.runtime * 2f) / 2f;
         // 确保时间不超过29.5秒
@@ -128,7 +128,6 @@ public partial class HumanControl : MonoBehaviour
 
     public void GetHealth(float COConcentrationPPM,float Temperature)
     {
-        float maxHealth = 100f;
         float coDamageMultiplier = 2f;    // CO伤害系数
         float tempDamageMultiplier = 1f; // 温度伤害系数
         float baseDamageRate = 0.5f;       // 基础伤害速率
@@ -143,7 +142,7 @@ public partial class HumanControl : MonoBehaviour
         float coDanger = Mathf.Clamp01((COConcentrationPPM - MIN_CO) / (MAX_CO - MIN_CO));
         float tempDanger = Mathf.Clamp01((Temperature - MIN_TEMP) / (MAX_TEMP - MIN_TEMP));
         // 计算总伤害速率（线性组合）
-        float damagePerSecond = baseDamageRate
+         damagePerSecond = baseDamageRate
             + (coDanger * coDamageMultiplier)
             + (tempDanger * tempDamageMultiplier);
         // 应用伤害

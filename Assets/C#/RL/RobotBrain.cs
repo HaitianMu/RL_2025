@@ -42,8 +42,10 @@ public class RobotBrain : Agent
 
     // 人类剩余血量观测值
     public float _humanHealthObservation;
-    // 人类血量衰减速率
-    private const float HumanHealthDecayRate = 0.01f;
+    //人类总体血量衰减速率
+    public float TotalHealthDecayRate = 0; 
+    // 人类平均血量衰减速率
+    public  float HumanHealthDecayRate = 0;
 
     //当前楼层人数
     public int floor_human;
@@ -53,6 +55,8 @@ public class RobotBrain : Agent
     public Vector3 robotPosition;
 
    public  Vector3 targetPosition;//机器人的决策目的地，但不一定朝向它移动，要经过一系列判断，比如是否可达？
+
+
 
     //观测值填充占位使用
     // 在EnvController中定义常量
@@ -124,9 +128,23 @@ public class RobotBrain : Agent
                 //print("训练模式，请求决策");
 
                 //print("场景中当前人数为："+myEnv.currentFloorhuman);
-                AddReward(-myEnv.currentFloorhuman*HumanHealthDecayRate);
+
+                foreach (HumanControl human in myEnv.personList)//统计当前存活人类的血量衰减速度
+                {
+                    if (human.isActiveAndEnabled)
+                    {
+
+                            TotalHealthDecayRate+= human.damagePerSecond;
+                        HumanHealthDecayRate = TotalHealthDecayRate / floor_human;
+                    }
+                  TotalHealthDecayRate = 0;
+                }
+
+                AddReward(-myEnv.currentFloorhuman*HumanHealthDecayRate);//计算场景中人类的健康衰减速率的平均值
+
+
                 LogReward("人类停留场景惩罚", -myEnv.currentFloorhuman * HumanHealthDecayRate);
-                _humanHealthObservation -= HumanHealthDecayRate;
+                _humanHealthObservation -= HumanHealthDecayRate/10;
 
                 if (Vector3.Distance(robotPosition, robotDestinationCache) < 2) { //距离目的2m（考虑到y轴高度），认为已经到达目的地。已经到达目的地之后，再次前往下一个目的地
                    // print("发送请求");
