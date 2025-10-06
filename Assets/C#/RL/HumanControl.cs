@@ -55,7 +55,7 @@ public partial class HumanControl: MonoBehaviour
     public void Start()
     {
         isFounded = false;//初始是没有被机器人发现过的
-        PanicChangeTime = 3;//三秒切换一次状态
+        PanicChangeTime = 5;//三秒切换一次状态
         stateTime = 0;
 
         myLeader = null;
