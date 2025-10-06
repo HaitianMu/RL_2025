@@ -50,12 +50,12 @@ public partial class HumanControl: MonoBehaviour
                                 //2是恐慌模式：完全随机移动
      //用来记录距离出口的距离
     float LastDistanceToExit;
-    float PanicChangeTime;
-    float stateTime;
+    public float PanicChangeTime;
+    public float stateTime;//用来记录人类状态的持续时间
     public void Start()
     {
         isFounded = false;//初始是没有被机器人发现过的
-        PanicChangeTime = 2;//三秒切换一次状态
+        PanicChangeTime = 3;//三秒切换一次状态
         stateTime = 0;
 
         myLeader = null;
@@ -80,30 +80,30 @@ public partial class HumanControl: MonoBehaviour
     private void FixedUpdate()
     {
         stateTime += Time.deltaTime;
-        if (!myEnv.useHumanAgent) {
-            //每个人刚开始都是独立的领导者，但是随着程序的进行，
-            //当看到机器人时，人类会进行跟随
-            //print("人类不使用大脑");
-            if (myEnv.usePanic)//找到机器人后就把这个禁用了
-            {
-                //print("拉拉拉，更新恐慌等级");
-                UpdatePanicLevel();    //更新人类的恐慌度等级
-            }
-            UpdateBehaviorModel(); //更新行为模式
+        if (myEnv.usePanic)//找到机器人后就把这个禁用了
+        {
+            //print("拉拉拉，更新恐慌等级");
+            UpdatePanicLevelAndHealth();    //无论是否使用人类智能体，更新人类的恐慌等级和健康值，主要进行火焰数据的读取工作
+        }
 
+
+        if (!myEnv.useHumanAgent)
+        {  //这边是依据场景数据计算得到的panicLevel进行移动，每一帧都进行panicLevel的计算和状态的改变，
+           //然后在Founction_ UpdateBehaviorModel()中，依据panicLevel计算得到currentState并进行相应状态的移动。但panicLevel的计算只有每5s能计算一次，也就是状态最多5s转变一次
+           //每个人刚开始都是独立的领导者，但是随着程序的进行，
+           //当看到机器人时，人类会进行跟随
+           //print("人类不使用大脑，依据当前环境来决定自己的行为状态");
+            UpdateBehaviorModel(); //更新行为模式
         }
         else
-        {
+        {//这边则依据人类大脑提供的CurrentState进行移动，也是每一帧进行状态的改变。
+
+
             // print("使用人类大脑决定自己移动状态");
-           // CurrentState = myHumanBrain.HumanState;
-            if (health > 40)
-            {
-                CurrentState = myHumanBrain.HumanState;
-            }
-            else
-            {
-                CurrentState = 1;
-            }
+            // CurrentState = myHumanBrain.HumanState;
+
+            CurrentState = myHumanBrain.HumanState;
+            
             switch (CurrentState)
             {
                 case 0: MoveModel0(); break;
@@ -113,39 +113,8 @@ public partial class HumanControl: MonoBehaviour
         }
 
 
-        //在这里修改人类的生命值,人类生命值的变动方式也要修改！！！9.3
-        if (health > 0)
-        {
-           // health -= DelayRate;
-
-            if (myLeader != null&&myLeader.tag=="Robot")
-            {
-                float currentDistance = Vector3.Distance(transform.position, myEnv.Exits[0].transform.position);
-                float deltaDistance = LastDistanceToExit - currentDistance; // 注意顺序，变近是正的
-                LastDistanceToExit = currentDistance;
-
-                if (myEnv.useRobot)
-                {
-
-                    if (deltaDistance > 0.01f) // 变近了，且变化大于阈值
-                    {
-                        //myEnv.RobotBrainList[0].AddReward(8f * deltaDistance); // 奖励（放大正向奖励系数）
-                       //myEnv.RobotBrainList[0].LogReward("带领人类朝出口移动正奖励", 8f * deltaDistance);
-                    }
-                    else if (deltaDistance < -0.01f) // 变远了
-                    {
-                        //myEnv.RobotBrainList[0].AddReward(6f * deltaDistance); // 小幅惩罚（负的delta）
-                       // myEnv.RobotBrainList[0].LogReward("带领人类远离出口负奖励", 6f * deltaDistance);
-                    }
-                }
-
-                //正向奖励系数(0.05) > 负向惩罚系数(0.02绝对值)，可能导致机器人故意反复靠近/远离出口刷分4.28,17:30
-
-                // delta变化很小（-0.01到0.01之间）就不奖励了，视为抖动或站稳，不处理
-            }
-
-        }
-        else if (health <= 0)
+        //在这里修改人类的生命值,人类生命值的变动方式也要修改！！！9.3  已删除//10.5
+        if (health <= 0)
         {
             if (myLeader is not null)
             {
@@ -162,8 +131,13 @@ public partial class HumanControl: MonoBehaviour
             Debug.Log("人类死亡");
             if (myEnv.useRobot)
             {
-                myEnv.RobotBrainList[0].AddReward(-300f);
-               myEnv.RobotBrainList[0].LogReward("人类死亡惩罚", -300);
+               myEnv.RobotBrainList[0].AddReward(-300f);
+               myEnv.RobotBrainList[0].LogReward("人类死亡对机器人的惩罚", -300);
+            }
+            if (myEnv.useHumanAgent)
+            {
+                myHumanBrain.AddReward(-200f);
+                myHumanBrain.LogReward("人类死亡对自己的惩罚",-200f);
             }
             gameObject.SetActive(false);
         }
@@ -234,9 +208,9 @@ public partial class HumanControl: MonoBehaviour
                 if (myEnv.useHumanAgent)
                 {
 
-                    float Exitreward = health <= 40 ? 3f * health : 3f * (100 - health);
-                    //myHumanBrain.AddReward(Exitreward);//"人类逃脱奖励"
-                    //myHumanBrain.LogReward("人类逃脱奖励", Exitreward);
+                    float Exitreward = health <= 20 ? 5f * health : 1.25f * (100 - health);
+                    myHumanBrain.AddReward(Exitreward);//"人类逃脱奖励"
+                    myHumanBrain.LogReward("人类逃脱对自己的奖励", Exitreward);
                     myHumanBrain.EndEpisode();
                 }
                
@@ -254,7 +228,7 @@ public partial class HumanControl: MonoBehaviour
                 {
                     float FireReward = health > 40 ? -0.5f : -0.2f;
                     //myHumanBrain.AddReward(FireReward);//"人类碰火惩罚"
-                    myHumanBrain.LogReward("人类碰火惩罚", FireReward);
+                    //myHumanBrain.LogReward("人类碰火惩罚", FireReward);
                 }
                 break;
         }

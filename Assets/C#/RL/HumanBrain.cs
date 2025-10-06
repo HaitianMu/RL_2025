@@ -22,16 +22,20 @@ public class HumanBrain : Agent
 
     public void FixedUpdate()
     {
-        if (!HumanIsInitialized)
+        if (HumanIsInitialized)
         {
-           // print("初始化已完成，我的小人是"+myHuman.name);
+            //print("初始化已完成，我的小人是"+myHuman.name);
            return;
 
         }
-        if(myEnv.useHumanAgent)
+        if (myEnv.useHumanAgent)
         {
             //请求决策网络支援
-            RequestDecision();
+            if (myHuman.stateTime > myHuman.PanicChangeTime)
+            {
+                RequestDecision();
+                myHuman.stateTime = 0;
+            }
         }
     }
 
@@ -53,20 +57,14 @@ public class HumanBrain : Agent
             Debug.Log("myEnv is null or useHumanAgen is false.");
             return;
         }
-        //机器人位置观测值：2 * n（其中 n 为机器人的数量）,人类位置观测值：60,,房间位置观测值：30,出口位置观测值：2,火源位置观测值：6
-        // 添加 Agent 观测值
-        // 使用场景对角线长度归一化，确保所有坐标∈[0,1]
-        float sceneDiagonal = Mathf.Sqrt(
-            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
-            Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
-        );
         //  print("场景对角线为长度为："+sceneDiagonal);
+        sensor.AddObservation(myEnv.RobotList[0].myAgent.floor_human); //   场景中跟随机器人的人类数量，1个
+        sensor.AddObservation(myEnv.RobotList[0].myAgent._humanHealthObservation); //场景中人类健康衰减速率，1个
         // 归一化 Agent 位置 ，           2个
         foreach (RobotBrain agent in myEnv.RobotBrainList)
         {
-            Vector3 normalizedPos = (agent.robot.transform.position) / sceneDiagonal;
-            sensor.AddObservation(normalizedPos.x);
-            sensor.AddObservation(normalizedPos.z);
+            sensor.AddObservation(NormalizedPos(agent.robot.transform.position).x);
+            sensor.AddObservation(NormalizedPos(agent.robot.transform.position).z);
             //Debug.Log("机器人的位置为" + normalizedPos);
         }
 
@@ -79,9 +77,8 @@ public class HumanBrain : Agent
             {
                 // 填充实际人类位置
                 HumanControl human = myEnv.personList[i];
-                Vector3 normalizedPos = human.transform.position / sceneDiagonal;
-                sensor.AddObservation(normalizedPos.x);
-                sensor.AddObservation(normalizedPos.z);
+                sensor.AddObservation(NormalizedPos(human.transform.position).x);
+                sensor.AddObservation(NormalizedPos(human.transform.position).z);
             }
             else
             {
@@ -91,20 +88,15 @@ public class HumanBrain : Agent
             }
         }
 
-        // 添加房间位置（相对Agent） 目前固定10个房间，
-        int maxRooms = 10;
+        // 添加房间位置（相对Agent） 最大20个房间，  40//
+        int maxRooms = 20;
         for (int i = 0; i < maxRooms; i++)
         {
             if (i < myEnv.cachedRoomPositions.Count)
             {
                 Vector3 roomPos = myEnv.cachedRoomPositions[i];
-                {
-                    // 位置归一化（相对于环境中心）
-                    Vector3 normalizedPos = (roomPos) / sceneDiagonal;
-                    sensor.AddObservation(normalizedPos.x); // X坐标 [-1, 1]
-                    sensor.AddObservation(normalizedPos.z); // Z坐标 [-1, 1]
-                    //Debug.Log("房间的位置为" + normalizedPos);
-                }
+                sensor.AddObservation(NormalizedPos(roomPos).x);
+                sensor.AddObservation(NormalizedPos(roomPos).z);
             }
             else
             {
@@ -115,8 +107,8 @@ public class HumanBrain : Agent
         }
 
         //添加出口位置   只有1个出口         39+[24,45]=[63,84]     2个
-        sensor.AddObservation((myEnv.Exits[0].transform.position.x) / sceneDiagonal);
-        sensor.AddObservation((myEnv.Exits[0].transform.position.z) / sceneDiagonal);
+        sensor.AddObservation(NormalizedPos(myEnv.Exits[0].transform.position).x);
+        sensor.AddObservation(NormalizedPos(myEnv.Exits[0].transform.position).z);
         //Debug.Log("出口的位置为" + (myEnv.Exits[0].transform.position) / Mathf.Max(myEnv.complexityControl.buildingGeneration.totalWidth, myEnv.complexityControl.buildingGeneration.totalHeight));
 
         //添加火源位置，目前火源只设置了三个      6个
@@ -125,13 +117,22 @@ public class HumanBrain : Agent
             Vector3 firePos = myEnv.FirePosition[i];
             {
                 // 位置归一化（相对于环境中心）
-                Vector3 normalizedPos = (firePos) / sceneDiagonal;
-                sensor.AddObservation(normalizedPos.x); // X坐标 [-1, 1]
-                sensor.AddObservation(normalizedPos.z); // Z坐标 [-1, 1]
+                sensor.AddObservation(NormalizedPos(firePos).x);
+                sensor.AddObservation(NormalizedPos(firePos).z);
                 // Debug.Log("火源的位置为" + normalizedPos);
             }
         }
-        //添加火源数量，火焰数量难以进行归一化，不添加了
+    }
+
+    public Vector3 NormalizedPos(Vector3 pos)
+    {
+        float maxX = myEnv.complexityControl.buildingGeneration.totalWidth;
+        float maxZ = myEnv.complexityControl.buildingGeneration.totalHeight;
+        // 归一化到 [-1, 1] 范围
+        float normalizedX = (pos.x / maxX) * 2 - 1;
+        float normalizedZ = (pos.z / maxZ) * 2 - 1;
+
+        return new Vector3(normalizedX, 0.5f, normalizedZ);
     }
 
     public override void OnActionReceived(ActionBuffers actions)

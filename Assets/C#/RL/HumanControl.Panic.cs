@@ -13,7 +13,7 @@ public partial class HumanControl : MonoBehaviour
     public bool UsePanic;
     // 计算总伤害速率（线性组合）
     public float damagePerSecond = 0;
-    void UpdatePanicLevel()
+    void UpdatePanicLevelAndHealth()
     {
         //根据当前的时间和人类所处位置读取数据；这里要使用hashmap来减少计算时间
         CSVRead cSVRead = myEnv.CsvRead;//获取内存中的火焰数据
@@ -27,7 +27,7 @@ public partial class HumanControl : MonoBehaviour
         // 将实时时间映射到0-240秒范围内（每0.5秒一个数据点）
         //火焰的仿真数据保存了30s，所以将当前时间/8来模仿在火灾场景中的停留时间
 
-        float normalizedTime = (myEnv.runtime / 3);
+        float normalizedTime = ((myEnv.runtime +3)/ 3);
         key.Time = Mathf.Round(normalizedTime * 2f) / 2f; // 取整到0.5秒间隔
        // key.Time = Mathf.Round(myEnv.runtime * 2f) / 2f;
         // 确保时间不超过29.5秒
@@ -50,7 +50,7 @@ public partial class HumanControl : MonoBehaviour
             // 先将CO浓度从mol/mol转换为ppm：ppm = mol/mol × 1,000,000
             float COConcentrationPPM = COConcentration * 1000000f;
            
-            if (stateTime > PanicChangeTime) {
+            if (stateTime > PanicChangeTime&&!myEnv.useHumanAgent) {
                 float panicLevel = GetPanicvalue(COConcentrationPPM, Temperature, Visibility);
                 this.panicLevel = Mathf.Clamp01(panicLevel);
                 //print("更新人类恐慌等级:" + panicLevel + "时间;" + myEnv.runtime);
@@ -165,7 +165,7 @@ public partial class HumanControl : MonoBehaviour
             {
                 case 0: MoveModel0(); break;
                 case 1: MoveModel1(); break;
-                case 2: MoveModel2(); break;
+                case 2: robotDetectTime = 0; MoveModel2(); break;
             }
 
             // 在HumanControl的UpdateBehaviorModel()中追加：
@@ -177,11 +177,11 @@ public partial class HumanControl : MonoBehaviour
         }
         else MoveModel0();//如果不启用恐慌模式，默认使用正常模式
 
-        if (myLeader != null)
+        /*if (myLeader != null)
         {
             //有领导者，就跟着领导者移动
             MoveModel0();
-        }
+        }*/
     }
 
     private void MoveModel0()//正常移动逻辑,具有独立的思考，只会对机器人进行跟随
@@ -243,7 +243,7 @@ public partial class HumanControl : MonoBehaviour
             UpdatePanicDestination();
             lastPanicUpdateTime = Time.time;
         }
-        /*移动部分！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！*/
+        /*移动部分！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！这一部分可以用来与机器人进行对抗，让人类自己决定自己的移动目的地？*/
 
         /*与机器人进行对抗的部分！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！*/
         HandleRobotInteraction();
@@ -310,10 +310,10 @@ public partial class HumanControl : MonoBehaviour
 
 
     //与机器人的对抗行为：！！！！！！！！！！！
-    public float robotDetectTime; // 记录首次检测到机器人的时间
+    public float robotDetectTime; // 模式2中，记录首次检测到机器人的时间
     public void HandleRobotInteraction()
     {
-        List<GameObject> leaderCandidates = GetCandidate(new List<string> { "Human", "Robot" }, 360, 3).Item1;
+        List<GameObject> leaderCandidates = GetCandidate(new List<string> { "Robot" }, 360, 30).Item1;
         
         if (leaderCandidates.Count > 0)//在视野里看到了机器人
         {
@@ -329,7 +329,7 @@ public partial class HumanControl : MonoBehaviour
           if ( robotDistance < 3f)
              {
                 // 第一阶段：抗拒2s
-                if (Time.time - robotDetectTime < 5  )
+                if (Time.time - robotDetectTime < 2  )
                 {
                    // print("现在时间是"+"ta跟着我"+ (Time.time - robotDetectTime) + "s了，我要离他远一点");
                     // 推开行为
@@ -342,7 +342,8 @@ public partial class HumanControl : MonoBehaviour
                 {
                    // print("它好像是来救我的，我跟着他走吧");
                     robotDetectTime = 0;
-                    UsePanic = false;//弃用人类的恐慌状态，人类转变为模式一，
+                    CurrentState = 1;//将移动状态设置为1；
+                    stateTime = 0;//将状态持续时长设置为0，便于下一次状态的转换   
 
                     if (myEnv.useRobot)
                     {

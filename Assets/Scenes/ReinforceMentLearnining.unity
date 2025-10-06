@@ -371,7 +371,7 @@ MonoBehaviour:
   isTraining: 1
   useRobot: 1
   useFire: 1
-  useHumanAgent: 0
+  useHumanAgent: 1
   usePanic: 1
   currentFloorhuman: 0
   FireStep: 0
