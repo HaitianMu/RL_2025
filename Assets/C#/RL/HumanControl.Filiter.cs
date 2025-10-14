@@ -165,7 +165,7 @@ public partial class HumanControl: MonoBehaviour
                 //Debug.Log("！！！！我的领导者是："+targetLeader);
                 if (targetLeader.CompareTag("Human"))
                 {
-                    print("领导者是人类");
+                   // print("领导者是人类");
                     //add
 
                     if (targetLeader.GetComponent<HumanControl>().dazingCountDown < 2)

@@ -203,18 +203,21 @@ public partial class EnvControl : MonoBehaviour
 
             if (useRobot)
             {
-                //人类场景停留惩罚
-                //RobotBrainList[0].AddReward(-0.02f * currentFloorhuman);
-                //RobotBrainList[0].LogReward("人类场景停留惩罚", -0.02f * currentFloorhuman);
-
-
-                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50||runtime>90.0f)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
+                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50 || runtime > 90.0f||StepCount>MaxStep)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
                 {
                     
                     this.LogReward("总人数", 10);
                     this.LogReward("回合数", 1);
                     this.LogReward("运行花费的总时间", EnpisodeTime);
                     EnpisodeTime = 0;
+
+                    foreach (HumanControl human in personList)//统计当前楼层的人数
+                    {
+                        if (human.isActiveAndEnabled)
+                        {
+                            RobotBrainList[0].LogReward("未死亡人类的总生命值", human.health);
+                        }
+                    }
 
                     RobotBrainList[0].LogReward("总人数", 10);//每成功逃脱一个人，额外给予100点奖励
 
@@ -223,8 +226,14 @@ public partial class EnvControl : MonoBehaviour
 
 
 
+                    foreach (HumanBrain humanBrain in HumanBrainList)
+                    {
+                        humanBrain.EpisodeInterrupted();
+                    }
                     RobotBrainList[0].EndEpisode();
+
                     print("当前运行时间是："+runtime+"回合终止");
+                    RobotBrainList[0].LogReward("场景总运行时长", runtime);
                     runtime = 0;//将场景运行时间归零
                     string filename = "layout";
                     //string layoutname = name[layoutNum];
@@ -342,20 +351,6 @@ public partial class EnvControl : MonoBehaviour
             // ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 
             // 步数超时重置环境！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
-            if (StepCount > MaxStep&&useRobot)
-            {
-                if (useRobot)//回合结束时，没有逃脱的人类全部按死亡计算
-                {
-                    //RobotBrainList[0].AddReward(-100 * currentFloorhuman);
-                    //RobotBrainList[0].LogReward("人类死亡惩罚", -100 * currentFloorhuman);
-                }
-
-                RobotBrainList[0].EpisodeInterrupted();//机器人终止该回合
-                foreach(HumanBrain humanBrain in HumanBrainList)
-                {
-                    humanBrain.EpisodeInterrupted();
-                }
-            }
             StepCount++;
         }
     }

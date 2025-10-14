@@ -141,8 +141,6 @@ public class RobotBrain : Agent
                 }
 
                 AddReward(-myEnv.currentFloorhuman*HumanHealthDecayRate);//计算场景中人类的健康衰减速率的平均值
-
-
                 LogReward("人类停留场景惩罚", -myEnv.currentFloorhuman * HumanHealthDecayRate);
                 _humanHealthObservation -= HumanHealthDecayRate/10;
 
@@ -191,6 +189,11 @@ public class RobotBrain : Agent
         }
         //机器人位置观测值：2 * n（其中 n 为机器人的数量）,人类位置观测值：60,,房间位置观测值：30,出口位置观测值：2,火源位置观测值：6
         // 添加 Agent 观测值
+
+
+
+
+
         // 使用场景对角线长度归一化，确保所有坐标∈[0,1]
         float sceneDiagonal = Mathf.Sqrt(
             Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
@@ -207,7 +210,7 @@ public class RobotBrain : Agent
              //Debug.Log("机器人的位置为" + normalizedPos);
         }
 
-        // 归一化 Human 位置，人类最多10个            20个
+        // 归一化 Human 位置，人类最多10个            40个,添加人类位置人类状态和人类状态持续时间的观测值
 
         // 固定观测维度为 MAX_HUMANS * 2
         for (int i = 0; i < MAX_HUMANS; i++)
@@ -218,11 +221,15 @@ public class RobotBrain : Agent
                 HumanControl human = myEnv.personList[i];
                 sensor.AddObservation(NormalizedPos(human.transform.position).x);
                 sensor.AddObservation(NormalizedPos(human.transform.position).z);
+                sensor.AddObservation(human.CurrentState);
+                sensor.AddObservation(human.stateTime);
+                sensor.AddObservation(human.health);
             }
             else
             {
                 // 填充占位值（推荐使用无效坐标）
                 sensor.AddObservation(-1f); // x
+                sensor.AddObservation(-1f); // z
                 sensor.AddObservation(-1f); // z
             }
         }

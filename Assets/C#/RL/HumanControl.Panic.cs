@@ -45,7 +45,7 @@ public partial class HumanControl : MonoBehaviour
             float Temperature = currFireData.Temperature;
             float Visibility = currFireData.Visibility;
             ////调整人类的视野参数，视野最小设置为5m，最大设置为15m
-            this.visionLimit = (int)Visibility/3 + 5;
+            this.visionLimit = (int)Visibility/3 + 10;
             // 计算人类恐慌值（0-1范围）
             // 先将CO浓度从mol/mol转换为ppm：ppm = mol/mol × 1,000,000
             float COConcentrationPPM = COConcentration * 1000000f;
@@ -347,8 +347,8 @@ public partial class HumanControl : MonoBehaviour
 
                     if (myEnv.useRobot)
                     {
-                        //leader.GetComponent<RobotControl>().myAgent.AddReward(50);
-                        //myEnv.RobotBrainList[0].LogReward("人类脱离恐慌状态的奖励", 50);
+                        myHumanBrain.AddReward(50);
+                        myHumanBrain.LogReward("脱离恐慌状态的奖励", 50);
                     }
                 }
             }

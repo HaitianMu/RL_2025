@@ -25,17 +25,7 @@ public class HumanBrain : Agent
         if (HumanIsInitialized)
         {
             //print("初始化已完成，我的小人是"+myHuman.name);
-           return;
-
-        }
-        if (myEnv.useHumanAgent)
-        {
-            //请求决策网络支援
-            if (myHuman.stateTime > myHuman.PanicChangeTime)
-            {
-                RequestDecision();
-                myHuman.stateTime = 0;
-            }
+            return;
         }
     }
 
@@ -58,8 +48,8 @@ public class HumanBrain : Agent
             return;
         }
         //  print("场景对角线为长度为："+sceneDiagonal);
-        sensor.AddObservation(myEnv.RobotList[0].myAgent.floor_human); //   场景中跟随机器人的人类数量，1个
-        sensor.AddObservation(myEnv.RobotList[0].myAgent._humanHealthObservation); //场景中人类健康衰减速率，1个
+        sensor.AddObservation(myHuman.health);//人类自己的生命值  1
+        sensor.AddObservation(myHuman.CurrentState);//人类当前的状态   1
         // 归一化 Agent 位置 ，           2个
         foreach (RobotBrain agent in myEnv.RobotBrainList)
         {
@@ -168,7 +158,7 @@ public class HumanBrain : Agent
     void OnDestroy()
     {
         // 定义保存路径（使用persistentDataPath）
-        string directoryPath = Path.Combine(Application.persistentDataPath, "Reward");
+        string directoryPath = Path.Combine(Application.persistentDataPath, "HumanReward");
         string filePath = Path.Combine(directoryPath, $"Human_Reward_log_{DateTime.Now:yyyyMMdd_HHmmss}.json");
 
         try
