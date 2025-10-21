@@ -45,8 +45,12 @@ public partial class EnvControl : MonoBehaviour
 
     public GameObject humanParent;//机器人的父物体，减少性能消耗
 
+    public int EpisodeNum=0;
+
     public float TotalSize;//区域总大小
-    public int RoomNum;//房间数目
+    public int RoomNum;//房间数目、
+
+    public bool isTest;//与训练完全一致，多了轮次的限制
     // 是否在训练
     public bool isTraining;
     // 是否使用机器人
@@ -90,8 +94,6 @@ public partial class EnvControl : MonoBehaviour
     {
         CsvRead = new CSVRead();
         CsvRead.TestFireDataLoading();//加载火焰数据
-
-
         EnpisodeNum = 0;
         HumanNum = 10;
         EnpisodeTime = 0;
@@ -203,9 +205,17 @@ public partial class EnvControl : MonoBehaviour
 
             if (useRobot)
             {
-                if (currentFloorhuman == 0 || RobotBrainList[0].stuckCounter > 50 || runtime > 90.0f||StepCount>MaxStep)  //当场景中的人类数量为0时，重新构建新一轮的训练场景;或机器人与火焰碰撞了50次;或训练时长大于30s
+                if (currentFloorhuman == 0 || runtime > 90.0f )  //当场景中的人类数量为0时或训练时长大于90s 重新构建一轮测试场景
                 {
-                    
+                    EnpisodeNum++;
+                    if (isTest && EnpisodeNum > 100)
+                    {
+                        CleanTheScene();
+                        return;
+                    }
+                    print(EnpisodeNum + "个回合");
+         
+
                     this.LogReward("总人数", 10);
                     this.LogReward("回合数", 1);
                     this.LogReward("运行花费的总时间", EnpisodeTime);
@@ -215,7 +225,7 @@ public partial class EnvControl : MonoBehaviour
                     {
                         if (human.isActiveAndEnabled)
                         {
-                            RobotBrainList[0].LogReward("未死亡人类的总生命值", human.health);
+                            RobotBrainList[0].LogReward("未逃生但存活人类的总生命值", human.health);
                         }
                     }
 
@@ -230,9 +240,10 @@ public partial class EnvControl : MonoBehaviour
                     {
                         humanBrain.EpisodeInterrupted();
                     }
+
                     RobotBrainList[0].EndEpisode();
 
-                    print("当前运行时间是："+runtime+"回合终止");
+                    print("当前运行时间是：" + runtime + "回合终止");
                     RobotBrainList[0].LogReward("场景总运行时长", runtime);
                     runtime = 0;//将场景运行时间归零
                     string filename = "layout";
@@ -265,10 +276,10 @@ public partial class EnvControl : MonoBehaviour
                         }
                         //Debug.Log(currentFloorhuman);
                     }
-                        AddRobot();//添加机器人
-                        AddRobotBrain();//添加机器人大脑
+                    AddRobot();//添加机器人
+                    AddRobotBrain();//添加机器人大脑
 
-                   
+
 
                     AddFirePosition();
                     FireNum = 0;
@@ -284,9 +295,10 @@ public partial class EnvControl : MonoBehaviour
                     //myEnv.cachedRoomPositions = myEnv.GetAllRoomPositions();//添加房间的位置信息
                 }
             }
-            else if(!useRobot) //不添加机器人的场景重构
+            else if (!useRobot) //不添加机器人的场景重构
             {
-                if (currentFloorhuman==0) {
+                if (currentFloorhuman == 0)
+                {
                     this.LogReward("总人数", 10);
                     this.LogReward("回合数", 1);
                     this.LogReward("运行花费的总时间", EnpisodeTime);
@@ -303,9 +315,9 @@ public partial class EnvControl : MonoBehaviour
                     AddPerson(HumanNum);
                     if (useHumanAgent)
                     {
-                       AddHumanBrain(humanBrainNum);
+                        AddHumanBrain(humanBrainNum);
                     }      //
-                   
+
                     foreach (HumanControl human in personList)//初始化统计当前楼层的人数，
                                                               //后续通过控制currentFloorhuman的增减，来决定是否开始新的回合，避免每一帧进行查找，影响性能
                     {

@@ -469,7 +469,7 @@ public class RobotBrain : Agent
 
 
         // 定义保存路径（使用persistentDataPath）
-        string directoryPath = Path.Combine(Application.persistentDataPath, "results");
+        string directoryPath = Path.Combine(Application.persistentDataPath, "10.15");
         string filePath = Path.Combine(directoryPath, $"Robot_Reward_log_{DateTime.Now:yyyyMMdd_HHmmss}.json");
 
         try

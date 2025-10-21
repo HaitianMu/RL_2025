@@ -36,7 +36,6 @@ public partial class HumanControl: MonoBehaviour
     public float health;//人类血量
     private float DelayRate = 0.01f;//人类血量衰减速率
 
-
     //人类恐慌状态相关参数
     [SerializeField] float exitDistance;//距离出口的距离
     [SerializeField] float startDistanceToExit;//场景开始时距离出口的距离
@@ -57,7 +56,7 @@ public partial class HumanControl: MonoBehaviour
     {
         isFounded = false;//初始是没有被机器人发现过的
         PanicChangeTime = 5;//三秒切换一次状态
-        stateTime = 0;
+        stateTime = 4;
 
         myLeader = null;
         myBehaviourMode = "Leader";
@@ -105,13 +104,14 @@ public partial class HumanControl: MonoBehaviour
             // CurrentState = myHumanBrain.HumanState;
             if (myEnv.useHumanAgent)
             {
+                myHumanBrain.RequestDecision();
+
                 //请求决策网络支援
                 if (stateTime >PanicChangeTime)
                 {
                     CurrentState = myHumanBrain.HumanState;
                     stateTime = 0;
          
-                    myHumanBrain.RequestDecision();
                     if (this.health < 30)
                     {
                         CurrentState = 1;
@@ -129,22 +129,24 @@ public partial class HumanControl: MonoBehaviour
 
         //在这里修改人类的生命值,人类生命值的变动方式也要修改！！！9.3  已删除//10.5
         if(health>0) {
-
-            float healthDeviation = Mathf.Abs(health - optimalHealthRange);
-            if (healthDeviation < 10f) // 生命值在30-50之间
+            if (myEnv.useHumanAgent)
             {
-                myHumanBrain.AddReward(0.3f); // 接近目标，给予奖励
-                myHumanBrain.LogReward("生命值接近40，给予大量奖励",0.3f); // 接近目标，给予奖励
-            }
-            else if (health > 60f) // 生命值太高，逃生不够"刺激"
-            {
-                myHumanBrain.AddReward(-0.1f); // 生命值过高
-                myHumanBrain.LogReward("生命值过高,给予少量奖励", -0.1f); 
-            }
-            else if (health < 30f) // 生命值太低，太危险
-            {
-                myHumanBrain.AddReward(-0.5f); // 生命值过低
-                myHumanBrain.LogReward("生命值过低，大量惩罚", -0.5f); 
+                float healthDeviation = Mathf.Abs(health - optimalHealthRange);
+                if (healthDeviation < 10f) // 生命值在30-50之间
+                {
+                    myHumanBrain.AddReward(0.3f); // 接近目标，给予奖励
+                    myHumanBrain.LogReward("生命值接近40，给予大量奖励", 0.3f); // 接近目标，给予奖励
+                }
+                else if (health > 60f) // 生命值太高，逃生不够"刺激"
+                {
+                    myHumanBrain.AddReward(-0.1f); // 生命值过高
+                    myHumanBrain.LogReward("生命值过高,给予少量奖励", -0.1f);
+                }
+                else if (health < 30f) // 生命值太低，太危险
+                {
+                    myHumanBrain.AddReward(-0.5f); // 生命值过低
+                    myHumanBrain.LogReward("生命值过低，大量惩罚", -0.5f);
+                }
             }
         }
 
@@ -239,7 +241,7 @@ public partial class HumanControl: MonoBehaviour
                     //!!!!!!!!!!!!!!!!!逃生率计算
                     myEnv.RobotBrainList[0].LogReward("逃生人数", 1);
                     //！！！！！人类逃生时的生命值计算
-                    myEnv.RobotBrainList[0].LogReward("未死亡人类的总生命值",health);
+                    myEnv.RobotBrainList[0].LogReward("逃生人类的总生命值",health);
                 }
                 if (myEnv.useHumanAgent)
                 {

@@ -90,7 +90,12 @@ public partial class EnvControl : MonoBehaviour
         /*float randomX = UnityEngine.Random.Range(1f, complexityControl.buildingGeneration.totalWidth);
         float randomZ = UnityEngine.Random.Range(1f, complexityControl.buildingGeneration.totalHeight);*/
 
-        spawnPosition = GetRandomPosInLayout();
+        if (isTest)
+        {
+            print("测试环节，将机器人放在出口右侧");
+            spawnPosition = Exits[0].transform.position + new Vector3(1, 0, 0);
+        }
+        else { spawnPosition = GetRandomPosInLayout(); }
         // 实例化机器人
         GameObject Robot = Instantiate(RobotPrefab, spawnPosition, Quaternion.identity);//实例化机器人的位置
         RobotList.Add(Robot.GetComponent<RobotControl>()); //将机器人加入列表
@@ -121,14 +126,27 @@ public partial class EnvControl : MonoBehaviour
     {
         // print("添加人类函数");
         // 在场景中生成num个人类，并把他们加入到personList中
+        Vector3 [] RoomPosition=new Vector3[10];
+
+
         for (int i = 0; i < num; i++)
         {
-
             Vector3 spawnPosition = Vector3.zero;
 
-            // 尝试找到一个没有碰撞的位置
-            spawnPosition = GetRandomPosInLayout();
-
+            
+               
+            if (isTest)
+            {
+                print("测试环节，将人类放在前10个房间中心");
+                spawnPosition = new Vector3(complexityControl.buildingGeneration.roomList[i].xzPosition.x+ complexityControl.buildingGeneration.roomList[i].width/2,
+                                             1.5f,
+                                             complexityControl.buildingGeneration.roomList[i].xzPosition.z + complexityControl.buildingGeneration.roomList[i].height / 2);
+                                     //固定在前10个房间的中间
+            }
+            else
+            {  // 尝试找到一个没有碰撞的位置
+                spawnPosition = GetRandomPosInLayout();
+            }
             // 实例化人类
             GameObject Person = Instantiate(HumanPrefab, spawnPosition, Quaternion.identity);
             personList.Add(Person.GetComponent<HumanControl>());
