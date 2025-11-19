@@ -78,7 +78,9 @@ public class HumanBrain : Agent
             }
         }
 
-        // 添加房间位置（相对Agent） 最大20个房间，  40//
+
+        //移除人类对于房间、出口、火源的感知
+        /*// 添加房间位置（相对Agent） 最大20个房间，  40//
         int maxRooms = 20;
         for (int i = 0; i < maxRooms; i++)
         {
@@ -95,8 +97,9 @@ public class HumanBrain : Agent
                 sensor.AddObservation(-1f); // z
             }
         }
-
-        //添加出口位置   只有1个出口         39+[24,45]=[63,84]     2个
+*/
+        //删除人类对火源和出口位置的感知
+       /* //添加出口位置   只有1个出口         39+[24,45]=[63,84]     2个
         sensor.AddObservation(NormalizedPos(myEnv.Exits[0].transform.position).x);
         sensor.AddObservation(NormalizedPos(myEnv.Exits[0].transform.position).z);
         //Debug.Log("出口的位置为" + (myEnv.Exits[0].transform.position) / Mathf.Max(myEnv.complexityControl.buildingGeneration.totalWidth, myEnv.complexityControl.buildingGeneration.totalHeight));
@@ -111,7 +114,7 @@ public class HumanBrain : Agent
                 sensor.AddObservation(NormalizedPos(firePos).z);
                 // Debug.Log("火源的位置为" + normalizedPos);
             }
-        }
+        }*/
     }
 
     public Vector3 NormalizedPos(Vector3 pos)
