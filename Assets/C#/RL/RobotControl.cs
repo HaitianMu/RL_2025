@@ -20,11 +20,13 @@ public class RobotControl : MonoBehaviour
         isRunning = true;//机器人默认工作
         myDirectFollowers = new List<HumanControl>();
         _botNavMeshAgent = GetComponent<NavMeshAgent>();
+        _botNavMeshAgent.speed = 6f;//将机器人速度设置为5m/s
     }
 
     public void Update()
     {
         robotFollowerCounter = myDirectFollowers.Count;
+        myAgent.robotPosition=this.transform.position;
 
     }
 
@@ -38,8 +40,8 @@ public class RobotControl : MonoBehaviour
             case "Fire":
                 print("机器人碰到火焰");
                 myAgent.stuckCounter++;
-                myAgent.AddReward(-10);//碰一次给十点惩罚
-                myAgent.LogReward("机器人触碰火焰惩罚",-10);
+                myAgent.AddReward(-5);//碰一次给5点惩罚
+                myAgent.LogReward("机器人触碰火焰惩罚",-5);
                 break;
         }
     }

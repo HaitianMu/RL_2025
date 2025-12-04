@@ -50,13 +50,13 @@ public class JsonLoad : MonoBehaviour
     {
         string[] names = { "layout1" , "layout2", "office_layout2", "supermarket_layout", "university_library", "apartment_complex", "hospital_floor", "SEU_LiWenzheng_Library_Floor1" }; // 声明一个长度为10的字符串数组
 
-        LoadAndDrawRooms("layout_1");
+        LoadAndDrawRooms("layout_complex_50_sector_alpha_fixed");
     }
 
     private void LoadAndDrawRooms(string targetLayoutName)
     {
         // 1. 加载JSON文件（路径可以是 StreamingAssets 或 Resources）
-        TextAsset jsonFile = Resources.Load<TextAsset>("Layout");
+        TextAsset jsonFile = Resources.Load<TextAsset>("layout");
         if (jsonFile == null)
         {
             Debug.LogError("JSON 文件未找到！请检查：\n" +

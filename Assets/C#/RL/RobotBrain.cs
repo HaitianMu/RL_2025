@@ -12,6 +12,8 @@ using System.IO.Abstractions;
 using UnityEditor;
 using System.IO;
 using System;
+using System.Numerics;
+using Vector3 = UnityEngine.Vector3;
 
 public class RobotBrain : Agent
 {
@@ -33,25 +35,33 @@ public class RobotBrain : Agent
     [HideInInspector] public RobotControl robotInfo;
  
     // 当前所在楼层
-    public int currentFloor;
+    public int currentFloor=1;
 
     // 机器人卡死计数器,会被火焰卡死
     public int stuckCounter;
 
-   
+    // 人类剩余血量观测值
+    public float _humanHealthObservation;
+    //人类总体血量衰减速率
+    public float TotalHealthDecayRate = 0; 
+    // 人类平均血量衰减速率
+    public  float HumanHealthDecayRate = 0;
+
     //当前楼层人数
     public int floor_human;
 
     public bool RobotIsInitialized = false;//用来控制初始化函数先执行
 
-    //用来记录距离出口的距离
-    float LastDistanceToExit;
-    float DeltDistanceToExit;
+    public Vector3 robotPosition;
+
+   public  Vector3 targetPosition;//机器人的决策目的地，但不一定朝向它移动，要经过一系列判断，比如是否可达？
+
+
 
     //观测值填充占位使用
     // 在EnvController中定义常量
     public const int MAX_HUMANS = 10; //最大人类数量， 与课程学习上限一致
-    public const int MAX_ROOMS = 15; // 与建筑设计上限一致
+    public const int MAX_ROOMS = 20; // 与建筑设计上限一致
     public const float INVALID_MARKER = -2f; // 超出[-1,1]范围的无效标记
 
     public float SignalcostTime;//记录单次运行花费的时间
@@ -80,11 +90,7 @@ public class RobotBrain : Agent
                 this.transform.position +=Vector3.right;
             }
 
-            DeltDistanceToExit = Vector3.Distance(robot.transform.position, myEnv.Exits[0].transform.position) - LastDistanceToExit;
-            LastDistanceToExit = Vector3.Distance(robot.transform.position, myEnv.Exits[0].transform.position);
-
                 //print("当前楼层人数为:" + floor_human);
-                Vector3 robotPosition = robot.transform.position;
                 robotPosition.y = 0.5f;
 
             // 如果不是训练模式，机器人就自己进行移动，暂时不使用训练收集的数据
@@ -92,13 +98,14 @@ public class RobotBrain : Agent
             //Debug.Log("每一帧更新");
             // 每个时间步都要求决策,决策后才会收集信息以及执行操作,后续函数执行的前置条件
 
-            AddReward(-0.01f*floor_human);//人类停留在火灾场景的惩罚
-            LogReward("人类停留在火灾场景的惩罚", -0.01f*floor_human);
-
+           // AddReward(-0.01f*floor_human);//人类停留在火灾场景的惩罚
+            //LogReward("人类停留在火灾场景的惩罚", -0.01f*floor_human);
+            
            
             //根据逻辑运行时，通过侦察该层的人数，来决定是否继续移动！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
             if (myEnv.isTraining is false)
                 {
+                print("非训练模式");
                     //print("当前楼层人数为:" + floor_human);
                     int lonelyHumanLeaderCounter = (from human in myEnv.personList
                                                     let humanPosition = human.transform.position - new Vector3(0, 0.5f, 0)
@@ -115,10 +122,32 @@ public class RobotBrain : Agent
                     }
                 }
                 //根据逻辑运行时，通过侦察该层的人数，来决定是否继续移动！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
-  
+           
             //训练开启，且机器人现在的位置与记忆中的位置距离小于1
             if (myEnv.isTraining) {
-                RequestDecision();
+                //print("训练模式，请求决策");
+
+                //print("场景中当前人数为："+myEnv.currentFloorhuman);
+
+                foreach (HumanControl human in myEnv.personList)//统计当前存活人类的血量衰减速度
+                {
+                    if (human.isActiveAndEnabled)
+                    {
+
+                            TotalHealthDecayRate+= human.damagePerSecond;
+                        HumanHealthDecayRate = TotalHealthDecayRate / floor_human;
+                    }
+                  TotalHealthDecayRate = 0;
+                }
+
+                AddReward(-myEnv.currentFloorhuman*HumanHealthDecayRate);//计算场景中人类的健康衰减速率的平均值
+                LogReward("人类停留场景惩罚", -myEnv.currentFloorhuman * HumanHealthDecayRate);
+                _humanHealthObservation -= HumanHealthDecayRate/10;
+
+                if (Vector3.Distance(robotPosition, robotDestinationCache) < 2) { //距离目的2m（考虑到y轴高度），认为已经到达目的地。已经到达目的地之后，再次前往下一个目的地
+                   // print("发送请求");
+                    RequestDecision();
+                }
             }
         }
     }//定帧更新
@@ -126,6 +155,17 @@ public class RobotBrain : Agent
     {
         print("机器人一个新的回合开始了");
 
+    }
+
+    public Vector3  NormalizedPos(Vector3 pos)
+    {
+        float maxX = myEnv.complexityControl.buildingGeneration.totalWidth;
+        float maxZ = myEnv.complexityControl.buildingGeneration.totalHeight;
+        // 归一化到 [-1, 1] 范围
+        float normalizedX = (pos.x / maxX) * 2 - 1;
+        float normalizedZ = (pos.z / maxZ) * 2 - 1;
+
+        return new Vector3(normalizedX, 0.5f, normalizedZ);
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -149,22 +189,28 @@ public class RobotBrain : Agent
         }
         //机器人位置观测值：2 * n（其中 n 为机器人的数量）,人类位置观测值：60,,房间位置观测值：30,出口位置观测值：2,火源位置观测值：6
         // 添加 Agent 观测值
+
+
+
+
+
         // 使用场景对角线长度归一化，确保所有坐标∈[0,1]
         float sceneDiagonal = Mathf.Sqrt(
             Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
             Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
         );
-      //  print("场景对角线为长度为："+sceneDiagonal);
+        //  print("场景对角线为长度为："+sceneDiagonal);
+        sensor.AddObservation(floor_human); //   场景中人类数量，1个
+        sensor.AddObservation(_humanHealthObservation); //场景中人类健康衰减速率，1个
         // 归一化 Agent 位置 ，           2个
         foreach (RobotBrain agent in myEnv.RobotBrainList)
         {
-            Vector3 normalizedPos = (agent.robot.transform.position) / sceneDiagonal;
-            sensor.AddObservation(normalizedPos.x);
-            sensor.AddObservation(normalizedPos.z);
+            sensor.AddObservation(NormalizedPos(agent.robot.transform.position).x);
+            sensor.AddObservation(NormalizedPos(agent.robot.transform.position).z);
              //Debug.Log("机器人的位置为" + normalizedPos);
         }
 
-        // 归一化 Human 位置，人类最多10个            20个
+        // 归一化 Human 位置，人类最多10个            40个,添加人类位置人类状态和人类状态持续时间的观测值
 
         // 固定观测维度为 MAX_HUMANS * 2
         for (int i = 0; i < MAX_HUMANS; i++)
@@ -173,32 +219,30 @@ public class RobotBrain : Agent
             {
                 // 填充实际人类位置
                 HumanControl human = myEnv.personList[i];
-                Vector3 normalizedPos = human.transform.position /sceneDiagonal;
-                sensor.AddObservation(normalizedPos.x);
-                sensor.AddObservation(normalizedPos.z);
+                sensor.AddObservation(NormalizedPos(human.transform.position).x);
+                sensor.AddObservation(NormalizedPos(human.transform.position).z);
+                sensor.AddObservation(human.CurrentState);
+                sensor.AddObservation(human.stateTime);
+                sensor.AddObservation(human.health);
             }
             else
             {
                 // 填充占位值（推荐使用无效坐标）
                 sensor.AddObservation(-1f); // x
                 sensor.AddObservation(-1f); // z
+                sensor.AddObservation(-1f); // z
             }
         }
-
-        // 添加房间位置（相对Agent） 目前固定10个房间，
-        int maxRooms = 10;
+         
+        // 添加房间位置（相对Agent） 最大20个房间，  40//
+        int maxRooms = 20;
         for (int i = 0; i < maxRooms; i++)
         {
             if (i < myEnv.cachedRoomPositions.Count)
             {
                 Vector3 roomPos = myEnv.cachedRoomPositions[i];
-                {
-                    // 位置归一化（相对于环境中心）
-                    Vector3 normalizedPos = (roomPos) / sceneDiagonal;
-                    sensor.AddObservation(normalizedPos.x); // X坐标 [-1, 1]
-                    sensor.AddObservation(normalizedPos.z); // Z坐标 [-1, 1]
-                    //Debug.Log("房间的位置为" + normalizedPos);
-                }
+                sensor.AddObservation(NormalizedPos(roomPos).x);
+                sensor.AddObservation(NormalizedPos(roomPos).z);
             }
             else
             {
@@ -209,9 +253,9 @@ public class RobotBrain : Agent
         }
 
         //添加出口位置   只有1个出口         39+[24,45]=[63,84]     2个
-        sensor.AddObservation((myEnv.Exits[0].transform.position.x) / sceneDiagonal);
-        sensor.AddObservation((myEnv.Exits[0].transform.position.z) / sceneDiagonal);
-         //Debug.Log("出口的位置为" + (myEnv.Exits[0].transform.position) / Mathf.Max(myEnv.complexityControl.buildingGeneration.totalWidth, myEnv.complexityControl.buildingGeneration.totalHeight));
+        sensor.AddObservation(NormalizedPos(myEnv.Exits[0].transform.position).x );
+        sensor.AddObservation(NormalizedPos(myEnv.Exits[0].transform.position).z);
+        //Debug.Log("出口的位置为" + (myEnv.Exits[0].transform.position) / Mathf.Max(myEnv.complexityControl.buildingGeneration.totalWidth, myEnv.complexityControl.buildingGeneration.totalHeight));
 
         //添加火源位置，目前火源只设置了三个      6个
         for (int i = 0;i<3;i++)
@@ -219,15 +263,11 @@ public class RobotBrain : Agent
             Vector3 firePos = myEnv.FirePosition[i];
             {
                 // 位置归一化（相对于环境中心）
-                Vector3 normalizedPos = (firePos) / sceneDiagonal;
-                sensor.AddObservation(normalizedPos.x); // X坐标 [-1, 1]
-                sensor.AddObservation(normalizedPos.z); // Z坐标 [-1, 1]
+                sensor.AddObservation(NormalizedPos(firePos).x);
+                sensor.AddObservation(NormalizedPos(firePos).z);
                 // Debug.Log("火源的位置为" + normalizedPos);
             }
         }
-        sensor.AddObservation(robotInfo.myDirectFollowers.Count / 10);//跟随机器人的人类数量
-        sensor.AddObservation(floor_human / 10);//场景中的人类数量
-        //添加火源数量，火焰数量难以进行归一化，不添加了
     }
     public override void OnActionReceived(ActionBuffers actions)
     {
@@ -237,62 +277,9 @@ public class RobotBrain : Agent
         MoveAgent(actions);  // 移动Agent
     }
 
-    public override void Heuristic(in ActionBuffers actionsOut)
-    {
-        if (myEnv.useRobot is false)
-            return;
-
-        if (currentFloor != 3)
-            return;
-
-        Vector3 robotPosition = robot.transform.position;
-        robotPosition.y = 0.5f + 4 * (currentFloor - 1);
-        ActionSegment<int> discreteActions = actionsOut.DiscreteActions;
-        ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
-
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            discreteActions[0] = 1;
-            Vector3 targetPosition = robotPosition + new Vector3(0, 0, 1);
-            continuousActions[0] = targetPosition.x / 18.0f;
-            continuousActions[1] = targetPosition.z / 18.0f;
-        }
-        else if (Input.GetKey(KeyCode.DownArrow))
-        {
-            discreteActions[0] = 1;
-            Vector3 targetPosition = robotPosition + new Vector3(0, 0, -1);
-            continuousActions[0] = targetPosition.x / 18.0f;
-            continuousActions[1] = targetPosition.z / 18.0f;
-        }
-        else if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            discreteActions[0] = 1;
-            Vector3 targetPosition = robotPosition + new Vector3(-1, 0, 0);
-            continuousActions[0] = targetPosition.x / 18.0f;
-            continuousActions[1] = targetPosition.z / 18.0f;
-        }
-        else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            discreteActions[0] = 1;
-            Vector3 targetPosition = robotPosition + new Vector3(1, 0, 0);
-            continuousActions[0] = targetPosition.x / 18.0f;
-            continuousActions[1] = targetPosition.z / 18.0f;
-        }
-        else if (Input.GetKey(KeyCode.A))
-        {
-            discreteActions[0] = 2;
-            continuousActions[0] = robotPosition.x / 18.0f;
-            continuousActions[1] = robotPosition.z / 18.0f;
-        }
-        else if (Input.GetKey(KeyCode.B))
-        {
-            discreteActions[0] = 3;
-            continuousActions[0] = robotPosition.x / 18.0f;
-            continuousActions[1] = robotPosition.z / 18.0f;
-        }
-    }
 
 
+   
     /// <summary>
     /// 利用模型决策结果移动机器人本体
     /// </summary>
@@ -310,34 +297,30 @@ public class RobotBrain : Agent
        // Debug.Log($"Actions: [{continuousActions[0]}, {continuousActions[1]}]");
         float targetX = Mathf.Clamp(continuousActions[0], -1, 1) * (myEnv.complexityControl.buildingGeneration.totalWidth / 2f) + (myEnv.complexityControl.buildingGeneration.totalWidth / 2f);
         float targetZ = Mathf.Clamp(continuousActions[1], -1, 1) * (myEnv.complexityControl.buildingGeneration.totalHeight / 2f) + (myEnv.complexityControl.buildingGeneration.totalHeight / 2f);
-        Vector3 targetPosition = new(targetX, 0.5f, targetZ);
+        /*// 输出上下界到控制面板
+        Debug.Log($"targetX 上下界: [0, {myEnv.complexityControl.buildingGeneration.totalWidth}]");
+        Debug.Log($"targetZ 上下界: [0, {myEnv.complexityControl.buildingGeneration.totalHeight}]");*/
+
+        targetPosition = new(targetX, 0.5f, targetZ);
         //print("目的地是："+targetPosition);
 
-        // 计算当前与目标的平面距离（忽略Y轴）
-        float currentDistance;
-        Vector3 currentPos = transform.position;
-        currentPos.y = targetPosition.y;
-        currentDistance = Vector3.Distance(currentPos, targetPosition);
-
-        if (currentDistance < 0.5||!IsReachable(targetPosition)) {
-            AddReward(-0.05f);//单次移动距离过小惩罚或移动目标不可达的惩罚
-            LogReward("单次移动距离过小或移动目标不可达的惩罚", -0.05f);
-        }
 
         if (!IsReachable(targetPosition))//无效目的地，返回
         {
+            //print("决策目的地不可达");//到这里是个死胡同了！！！！！！！！！9.26，15:00
+
             GMoveAgent();
+            stuckCounter++;//目的地无效
             return;
         }
 
-        float sceneDiagonal = Mathf.Sqrt(
-           Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalWidth, 2) +
-           Mathf.Pow(myEnv.complexityControl.buildingGeneration.totalHeight, 2)
-       );
-        if (Vector3.Distance(targetPosition, positionExit) < sceneDiagonal / 2 &&robotInfo.myDirectFollowers.Count>0)
+        if(Vector3.Distance(targetPosition, myEnv.Exits[0].gameObject.transform.position) < 10 && this.robot.GetComponent<RobotControl>().robotFollowerCounter > 0)
+        {
+            targetPosition = myEnv.Exits[0].gameObject.transform.position;
+        }
+        //定位到了出口附近一定范围内，且跟随者数量大于0，将目的地设置为出口
 
-            targetPosition = positionExit+new Vector3(1,0,0);//往右边去一点，省的堵门
-        //到出口一定范围内之后，将目的地设置为出口
+
         //Debug.Log("这一帧的目的地是："+targetPosition);
         if (myEnv.isTraining is false)
         {
@@ -355,6 +338,7 @@ public class RobotBrain : Agent
             }
         }
 
+
         if (IsReachable(targetPosition))
         {
             // 如果目标可达则前往目标，不可达则继续上一步动作
@@ -367,6 +351,7 @@ public class RobotBrain : Agent
             }
             else
             {
+                //print("决策目的地可达，并朝向决策目的地进行移动");
                 robotDestinationCache = targetPosition;
                 robotNavMeshAgent.SetDestination(robotDestinationCache);
             }
@@ -389,16 +374,13 @@ public class RobotBrain : Agent
 
     private void GMoveAgent()
     {
-        //print("移动机器人函数");
-        Vector3 targetPosition = new();
-        Vector3 robotPosition = robot.transform.position;
         //print("机器人的跟随者数量为：" + robotInfo.myDirectFollowers.Count);
         if (robotInfo.robotFollowerCounter > 0)//如果当前机器人当前跟随者大于0个，前往出口
         {
           //  print("跟随人类数量大于0");
             //随机一个出口，将人送到出口
             //print("2机器人检测到的出口数量为："+myEnv.Exits.Count);
-            targetPosition = targetPosition = myEnv.Exits[0].gameObject.transform.position + new Vector3(1, 0, 0);//往右边去一点，省的堵门
+            targetPosition = targetPosition = myEnv.Exits[0].gameObject.transform.position + new Vector3(1.5f, 0, 0);//往右边去一点，省的堵门
         }
         else
         {
@@ -487,7 +469,7 @@ public class RobotBrain : Agent
 
 
         // 定义保存路径（使用persistentDataPath）
-        string directoryPath = Path.Combine(Application.persistentDataPath, "results");
+        string directoryPath = Path.Combine(Application.persistentDataPath, "10.15");
         string filePath = Path.Combine(directoryPath, $"Robot_Reward_log_{DateTime.Now:yyyyMMdd_HHmmss}.json");
 
         try
@@ -518,4 +500,61 @@ public class RobotBrain : Agent
             Debug.LogError($"保存奖励数据失败: {e.Message}");
         }
     }
+
+
+    public override void Heuristic(in ActionBuffers actionsOut) // 这里的代码没什么用
+    {
+        if (myEnv.useRobot is false)
+            return;
+
+        if (currentFloor != 3)
+            return;
+
+        Vector3 robotPosition = robot.transform.position;
+        robotPosition.y = 0.5f + 4 * (currentFloor - 1);
+        ActionSegment<int> discreteActions = actionsOut.DiscreteActions;
+        ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
+
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            discreteActions[0] = 1;
+            Vector3 targetPosition = robotPosition + new Vector3(0, 0, 1);
+            continuousActions[0] = targetPosition.x / 18.0f;
+            continuousActions[1] = targetPosition.z / 18.0f;
+        }
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            discreteActions[0] = 1;
+            Vector3 targetPosition = robotPosition + new Vector3(0, 0, -1);
+            continuousActions[0] = targetPosition.x / 18.0f;
+            continuousActions[1] = targetPosition.z / 18.0f;
+        }
+        else if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            discreteActions[0] = 1;
+            Vector3 targetPosition = robotPosition + new Vector3(-1, 0, 0);
+            continuousActions[0] = targetPosition.x / 18.0f;
+            continuousActions[1] = targetPosition.z / 18.0f;
+        }
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            discreteActions[0] = 1;
+            Vector3 targetPosition = robotPosition + new Vector3(1, 0, 0);
+            continuousActions[0] = targetPosition.x / 18.0f;
+            continuousActions[1] = targetPosition.z / 18.0f;
+        }
+        else if (Input.GetKey(KeyCode.A))
+        {
+            discreteActions[0] = 2;
+            continuousActions[0] = robotPosition.x / 18.0f;
+            continuousActions[1] = robotPosition.z / 18.0f;
+        }
+        else if (Input.GetKey(KeyCode.B))
+        {
+            discreteActions[0] = 3;
+            continuousActions[0] = robotPosition.x / 18.0f;
+            continuousActions[1] = robotPosition.z / 18.0f;
+        }
     }
+
+}

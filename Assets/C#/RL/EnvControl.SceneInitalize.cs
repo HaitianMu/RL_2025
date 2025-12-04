@@ -90,7 +90,12 @@ public partial class EnvControl : MonoBehaviour
         /*float randomX = UnityEngine.Random.Range(1f, complexityControl.buildingGeneration.totalWidth);
         float randomZ = UnityEngine.Random.Range(1f, complexityControl.buildingGeneration.totalHeight);*/
 
-        spawnPosition = GetRandomPosInLayout();
+        if (isTest)
+        {
+            print("测试环节，将机器人放在出口右侧");
+            spawnPosition = Exits[0].transform.position + new Vector3(1, 0, 0);
+        }
+        else { spawnPosition = GetRandomPosInLayout(); }
         // 实例化机器人
         GameObject Robot = Instantiate(RobotPrefab, spawnPosition, Quaternion.identity);//实例化机器人的位置
         RobotList.Add(Robot.GetComponent<RobotControl>()); //将机器人加入列表
@@ -113,20 +118,35 @@ public partial class EnvControl : MonoBehaviour
         robotBrain.stuckCounter = 0;
         robotBrain.SignalcostTime = 0;
         robotBrain.TotalcostTime = 0;
+        robotBrain._humanHealthObservation = 100;
+        robotBrain.robotPosition = robot.gameObject.transform.position;
         RobotBrainList[0].RobotIsInitialized = true;//初始化已完成，可以执行后续函数
     }
     public void AddPerson(int num)
     {
         // print("添加人类函数");
         // 在场景中生成num个人类，并把他们加入到personList中
+        Vector3 [] RoomPosition=new Vector3[10];
+
+
         for (int i = 0; i < num; i++)
         {
-
             Vector3 spawnPosition = Vector3.zero;
 
-            // 尝试找到一个没有碰撞的位置
-            spawnPosition = GetRandomPosInLayout();
-
+            
+               
+            if (isTest)
+            {
+                print("测试环节，将人类放在前10个房间中心");
+                spawnPosition = new Vector3(complexityControl.buildingGeneration.roomList[i].xzPosition.x+ complexityControl.buildingGeneration.roomList[i].width/2,
+                                             1.5f,
+                                             complexityControl.buildingGeneration.roomList[i].xzPosition.z + complexityControl.buildingGeneration.roomList[i].height / 2);
+                                     //固定在前10个房间的中间
+            }
+            else
+            {  // 尝试找到一个没有碰撞的位置
+                spawnPosition = GetRandomPosInLayout();
+            }
             // 实例化人类
             GameObject Person = Instantiate(HumanPrefab, spawnPosition, Quaternion.identity);
             personList.Add(Person.GetComponent<HumanControl>());
@@ -200,7 +220,7 @@ public partial class EnvControl : MonoBehaviour
         }
 
     }
-    public void AddSmoke(Vector3 FirePosition) //添加火焰，只需传入x，z坐标即可
+    /*public void AddSmoke(Vector3 FirePosition) //添加火焰，只需传入x，z坐标即可
     {
         // 参数校验
         if (SmokePrefab == null)
@@ -226,7 +246,7 @@ public partial class EnvControl : MonoBehaviour
         GameObject.Find("SmokeList");
         // 可选：设置父物体（保持层级整洁）
         smokeInstance.transform.SetParent(transform);
-    }
+    }*/
     /// <summary>
     /// 获取房间内无碰撞的随机位置
     /// 加权随机分布,较大概率生成在大房间内部，但又保证房间的随机性
@@ -263,66 +283,73 @@ public partial class EnvControl : MonoBehaviour
 
     public void AddFirePosition()//找到场景中的左上，右上，右下三个房间，将他们的中心作为三个火源的位置
     {
-        if (complexityControl.buildingGeneration.roomList == null || complexityControl.buildingGeneration.roomList.Count == 0)
-        {
-            Debug.LogError("房间列表为空！");
-            return;
-        }
+        /* if (complexityControl.buildingGeneration.roomList == null || complexityControl.buildingGeneration.roomList.Count == 0)
+         {
+             Debug.LogError("房间列表为空！");
+             return;
+         }
 
-        // 初始化关键变量（单次遍历完成所有计算）
-        Room topLeftRoom = null;
-        Room topRightRoom = null;
-        Room bottomRightRoom = null;
-        float minX = float.MaxValue;
-        float maxX = float.MinValue;
+         // 初始化关键变量（单次遍历完成所有计算）
+         Room topLeftRoom = null;
+         Room topRightRoom = null;
+         Room bottomRightRoom = null;
+         float minX = float.MaxValue;
+         float maxX = float.MinValue;
 
-        // 单次遍历处理所有逻辑
-        foreach (Room room in complexityControl.buildingGeneration.roomList)
-        {
-            float x = room.xzPosition.x;
-            float z = room.xzPosition.z;
+         // 单次遍历处理所有逻辑
+         foreach (Room room in complexityControl.buildingGeneration.roomList)
+         {
+             float x = room.xzPosition.x;
+             float z = room.xzPosition.z;
 
-            // 更新左上房间逻辑
-            if (x < minX || (x == minX && z > topLeftRoom?.xzPosition.z))
-            {
-                minX = x;
-                topLeftRoom = room;
-            }
-            else if (x == minX && z > topLeftRoom.xzPosition.z)
-            {
-                topLeftRoom = room;
-            }
+             // 更新左上房间逻辑
+             if (x < minX || (x == minX && z > topLeftRoom?.xzPosition.z))
+             {
+                 minX = x;
+                 topLeftRoom = room;
+             }
+             else if (x == minX && z > topLeftRoom.xzPosition.z)
+             {
+                 topLeftRoom = room;
+             }
 
-            // 更新右上和右下房间逻辑
-            if (x > maxX)
-            {
-                maxX = x;
-                topRightRoom = room;
-                bottomRightRoom = room;
-            }
-            else if (x == maxX)
-            {
-                // 更新右上（取Z最大）
-                if (z > topRightRoom.xzPosition.z)
-                {
-                    topRightRoom = room;
-                }
-                // 更新右下（取Z最小）
-                if (z < bottomRightRoom.xzPosition.z)
-                {
-                    bottomRightRoom = room;
-                }
-            }
-        }
+             // 更新右上和右下房间逻辑
+             if (x > maxX)
+             {
+                 maxX = x;
+                 topRightRoom = room;
+                 bottomRightRoom = room;
+             }
+             else if (x == maxX)
+             {
+                 // 更新右上（取Z最大）
+                 if (z > topRightRoom.xzPosition.z)
+                 {
+                     topRightRoom = room;
+                 }
+                 // 更新右下（取Z最小）
+                 if (z < bottomRightRoom.xzPosition.z)
+                 {
+                     bottomRightRoom = room;
+                 }
+             }
+         }
 
-        // 计算中心点
-        Vector3 topLeftCenter = CalculateRoomCenter(topLeftRoom);
-        Vector3 topRightCenter = CalculateRoomCenter(topRightRoom);
-        Vector3 bottomRightCenter = CalculateRoomCenter(bottomRightRoom);
+         // 计算中心点
+         Vector3 topLeftCenter = CalculateRoomCenter(topLeftRoom);
+         Vector3 topRightCenter = CalculateRoomCenter(topRightRoom);
+         Vector3 bottomRightCenter = CalculateRoomCenter(bottomRightRoom);
 
-        FirePosition.Add(topLeftCenter);
-        FirePosition.Add(topRightCenter);
-        FirePosition.Add(bottomRightCenter);
+         FirePosition.Add(topLeftCenter);
+         FirePosition.Add(topRightCenter); 
+         FirePosition.Add(bottomRightCenter);*/  //计算三个角房间的位置坐标
+
+
+        //临时添加两个火焰的位置，根据Pyrosim中的火焰位置进行
+        FirePosition.Add(new Vector3(27,0,-6));
+        FirePosition.Add(new Vector3(28, 0, 33));
+        FirePosition.Add(new Vector3(47, 0, 23));
+
     }
 
     // 保持原有中心计算方法

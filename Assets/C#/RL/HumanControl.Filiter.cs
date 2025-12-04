@@ -15,7 +15,7 @@ public partial class HumanControl: MonoBehaviour
 
 
     //领导者模式。人物自己移动
-    private void LeaderUpdate()
+    private void LeaderUpdate_HF()   //Herd Following
     {
         if (myTargetDoor is null)
         {
@@ -23,7 +23,7 @@ public partial class HumanControl: MonoBehaviour
          
             //目前不知道去哪，而且视线里没有找到机器人，开始自己乱逛
             //print("当前没有计划前往的门，开始扫描，然后筛选");
-            (List<GameObject> doorCandidates, List<Vector3> unknownDirections) = GetCandidate(new List<string> { "Door", "Exit" }, 360, visionLimit);
+            (List<GameObject> doorCandidates, List<Vector3> unknownDirections) = GetCandidate(new List<string> { "Door", "Exit" }, 360,8);
 
             GameObject exit = FilterTargetDoorCandidates(ref doorCandidates, unknownDirections.Count > 0 ? "Explore" : "Normal");
             if (exit is not null)
@@ -118,7 +118,7 @@ public partial class HumanControl: MonoBehaviour
 
                         if (leaderCandidates.Count > 0)
                         {
-                            Debug.Log("附近有可以跟随的领导者，我已切换为跟随者模式");
+                           // Debug.Log("附近有可以跟随的领导者，我已切换为跟随者模式");
                                 SwitchBehaviourMode();
    
                             return;
@@ -136,7 +136,7 @@ public partial class HumanControl: MonoBehaviour
         }
     }
     //跟随者模式
-    private void FollowerUpdate()
+    private void FollowerUpdate_HF()  //Herd Following(盲目跟随)
     {
         //print("切换模式:追随者");
 
@@ -144,7 +144,7 @@ public partial class HumanControl: MonoBehaviour
         {
             List<GameObject> leaderCandidates = GetCandidate(new List<string> { "Human", "Robot" }, 360, 5).Item1;
             //FilterLeaderCandidates(ref leaderCandidates);//筛选掉不能作为自己领导者的人；
-            Debug.Log("我检测到的人类数量为："+leaderCandidates.Count);
+            //Debug.Log("我检测到的人类数量为："+leaderCandidates.Count);
             // GameObject targetLeader= DecideMyLeader(leaderCandidates);//在剩余的人中随机选择一个作为自己的领导者
 
             // 新增过滤：排除已经有领导者的人类
@@ -165,7 +165,7 @@ public partial class HumanControl: MonoBehaviour
                 //Debug.Log("！！！！我的领导者是："+targetLeader);
                 if (targetLeader.CompareTag("Human"))
                 {
-                    print("领导者是人类");
+                   // print("领导者是人类");
                     //add
 
                     if (targetLeader.GetComponent<HumanControl>().dazingCountDown < 2)
@@ -198,7 +198,7 @@ public partial class HumanControl: MonoBehaviour
         else//已经有领导者了，则跟随领导者，直到出口。
         {
             Vector3 leaderPosition = myLeader.transform.position;
-            List<GameObject> exitList = GetCandidate(new List<string> { "Exit" }, 360, visionLimit).Item1;
+            List<GameObject> exitList = GetCandidate(new List<string> { "Exit" }, 360, 30).Item1;
 
             //在跟随的过程中，持续进行检测是否有出口，有的话就直接离开,没有的话就继续跟随机器人
             if (exitList.Count > 0)
